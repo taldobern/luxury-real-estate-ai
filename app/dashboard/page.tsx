@@ -74,25 +74,25 @@ export default function DashboardPage() {
     : 0;
 
   return (
-    <main className="min-h-screen" style={{ background: "#0a0a0a" }}>
+    <main className="min-h-screen" style={{ background: "#f7f4ef" }}>
       {/* Header */}
-      <header className="border-b" style={{ borderColor: "#1a1a1a" }}>
+      <header className="border-b bg-white" style={{ borderColor: "#e4ddd0" }}>
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full flex items-center justify-center"
               style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)" }}>
-              <span className="text-black font-semibold text-sm">L</span>
+              <span className="text-white font-semibold text-sm">L</span>
             </div>
             <div>
               <span className="font-light tracking-[0.15em] text-lg"
-                style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#e8e8e8" }}>LUX</span>
+                style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#1a1a1a" }}>LUX</span>
               <span className="font-semibold tracking-[0.15em] text-lg"
-                style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#d4a843" }}>VISION</span>
-              <span className="ml-2 text-xs tracking-widest uppercase" style={{ color: "#4a4a4a" }}>AI</span>
+                style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#b8902a" }}>VISION</span>
+              <span className="ml-2 text-xs tracking-widest uppercase" style={{ color: "#bbb8b0" }}>AI</span>
             </div>
           </Link>
-          <Link href="/" className="text-xs tracking-widest uppercase px-4 py-2 rounded-lg"
-            style={{ color: "#d4a843", border: "1px solid rgba(212,168,67,0.2)" }}>
+          <Link href="/" className="text-xs tracking-widest uppercase px-4 py-2 rounded-lg font-medium"
+            style={{ color: "#b8902a", background: "rgba(184,144,42,0.08)", border: "1px solid rgba(184,144,42,0.2)" }}>
             ← Generate New
           </Link>
         </div>
@@ -102,39 +102,39 @@ export default function DashboardPage() {
         {/* Usage stats */}
         {profile && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-            <div className="rounded-2xl p-5" style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-              <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#3a3a3a" }}>Images Generated</p>
-              <p className="text-3xl font-light" style={{ color: "#e8e8e8" }}>
+            <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+              <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Images Generated</p>
+              <p className="text-3xl font-light" style={{ color: "#1a1a1a" }}>
                 {profile.images_used}
-                <span className="text-sm ml-1" style={{ color: "#555" }}>/ {profile.images_limit}</span>
+                <span className="text-sm ml-1" style={{ color: "#bbb8b0" }}>/ {profile.images_limit}</span>
               </p>
               {/* Progress bar */}
-              <div className="mt-3 h-1 rounded-full" style={{ background: "#1e1e1e" }}>
-                <div className="h-1 rounded-full transition-all"
+              <div className="mt-3 h-1.5 rounded-full" style={{ background: "#f0ece4" }}>
+                <div className="h-1.5 rounded-full transition-all"
                   style={{ width: `${usagePercent}%`, background: usagePercent > 80 ? "#ef4444" : "linear-gradient(90deg, #d4a843, #9a7520)" }} />
               </div>
             </div>
 
-            <div className="rounded-2xl p-5" style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-              <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#3a3a3a" }}>Plan</p>
-              <p className="text-xl font-light capitalize" style={{ color: "#e8e8e8" }}>{profile.plan}</p>
+            <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+              <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Plan</p>
+              <p className="text-xl font-light capitalize" style={{ color: "#1a1a1a" }}>{profile.plan}</p>
               {profile.plan === "trial" && (
-                <p className="text-xs mt-1" style={{ color: trialDaysLeft <= 2 ? "#f87171" : "#555" }}>
+                <p className="text-xs mt-1" style={{ color: trialDaysLeft <= 2 ? "#dc2626" : "#888880" }}>
                   {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} remaining
                 </p>
               )}
             </div>
 
-            <div className="rounded-2xl p-5" style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-              <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#3a3a3a" }}>Total Saved</p>
-              <p className="text-3xl font-light" style={{ color: "#e8e8e8" }}>{generations.length}</p>
-              <p className="text-xs mt-1" style={{ color: "#555" }}>images in your history</p>
+            <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+              <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Total Saved</p>
+              <p className="text-3xl font-light" style={{ color: "#1a1a1a" }}>{generations.length}</p>
+              <p className="text-xs mt-1" style={{ color: "#bbb8b0" }}>images in your history</p>
             </div>
           </div>
         )}
 
         {/* Generations grid */}
-        <h2 className="text-xs tracking-widest uppercase mb-6" style={{ color: "#555" }}>Your Generated Images</h2>
+        <h2 className="text-xs tracking-widest uppercase mb-6" style={{ color: "#888880" }}>Your Generated Images</h2>
 
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -144,19 +144,19 @@ export default function DashboardPage() {
           </div>
         ) : generations.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-sm font-light tracking-widest uppercase" style={{ color: "#2a2a2a" }}>
+            <p className="text-sm font-light tracking-widest uppercase" style={{ color: "#bbb8b0" }}>
               No images yet — go generate your first one
             </p>
             <Link href="/" className="inline-block mt-4 px-6 py-2 rounded-xl text-xs tracking-widest uppercase"
-              style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)", color: "#000" }}>
+              style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)", color: "#fff" }}>
               Generate Image
             </Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {generations.map((gen) => (
-              <div key={gen.id} className="group relative rounded-2xl overflow-hidden"
-                style={{ border: "1px solid #1e1e1e", background: "#111" }}>
+              <div key={gen.id} className="group relative rounded-2xl overflow-hidden bg-white"
+                style={{ border: "1px solid #e4ddd0" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={gen.image_url} alt={gen.address}
                   className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -164,18 +164,18 @@ export default function DashboardPage() {
 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-3"
-                  style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%)" }}>
+                  style={{ background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 55%)" }}>
                   <div />
                   <div>
                     <p className="text-white text-xs font-medium line-clamp-2 mb-1">{gen.address}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] px-2 py-0.5 rounded"
-                        style={{ background: "rgba(212,168,67,0.2)", color: "#d4a843" }}>
+                        style={{ background: "rgba(212,168,67,0.25)", color: "#d4a843" }}>
                         {gen.style.replace("-", " ")}
                       </span>
                       <button onClick={() => handleDownload(gen.image_url, gen.address)}
                         className="p-1.5 rounded-lg transition-colors"
-                        style={{ background: "#d4a843", color: "#000" }}>
+                        style={{ background: "#d4a843", color: "#fff" }}>
                         <DownloadIcon />
                       </button>
                     </div>

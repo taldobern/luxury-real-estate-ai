@@ -49,19 +49,19 @@ const SearchIcon = () => (
 
 function LoadingSkeleton({ label }: { label: string }) {
   return (
-    <div className="w-full aspect-square rounded-2xl overflow-hidden relative">
+    <div className="w-full aspect-square rounded-2xl overflow-hidden relative" style={{ background: "#f0ece4" }}>
       <div className="shimmer w-full h-full" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
         <div className="relative w-16 h-16">
           <div className="absolute inset-0 rounded-full border-2 border-transparent"
-            style={{ borderTopColor: "#d4a843", borderRightColor: "#d4a84340", animation: "spin 1s linear infinite" }} />
-          <div className="absolute inset-2 rounded-full border border-yellow-900/40" />
+            style={{ borderTopColor: "#b8902a", borderRightColor: "#b8902a40", animation: "spin 1s linear infinite" }} />
+          <div className="absolute inset-2 rounded-full border" style={{ borderColor: "#e4ddd0" }} />
         </div>
         <div className="text-center">
-          <p className="font-light tracking-widest text-xs uppercase" style={{ color: "#d4a843" }}>
+          <p className="font-light tracking-widest text-xs uppercase" style={{ color: "#b8902a" }}>
             {label}
           </p>
-          <p className="text-gray-600 text-xs mt-1 tracking-wider">Please wait…</p>
+          <p className="text-xs mt-1 tracking-wider" style={{ color: "#888880" }}>Please wait…</p>
         </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -81,11 +81,11 @@ function AnglePicker({
   onSelect: (heading: number) => void;
 }) {
   return (
-    <div className="rounded-2xl p-5" style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-      <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#555" }}>
+    <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+      <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>
         Select Property View
       </p>
-      <p className="text-xs mb-4" style={{ color: "#3a3a3a" }}>
+      <p className="text-xs mb-4" style={{ color: "#bbb8b0" }}>
         Pick the angle that shows the front of the house
       </p>
       <div className="grid grid-cols-2 gap-2">
@@ -97,8 +97,8 @@ function AnglePicker({
               onClick={() => onSelect(angle.heading)}
               className="relative rounded-xl overflow-hidden transition-all duration-200"
               style={{
-                border: isSelected ? "2px solid #d4a843" : "2px solid #1e1e1e",
-                boxShadow: isSelected ? "0 0 16px rgba(212,168,67,0.3)" : "none",
+                border: isSelected ? "2px solid #b8902a" : "2px solid #e4ddd0",
+                boxShadow: isSelected ? "0 0 16px rgba(184,144,42,0.25)" : "none",
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -106,8 +106,8 @@ function AnglePicker({
               <div
                 className="absolute bottom-0 inset-x-0 py-1.5 text-center text-[10px] tracking-widest uppercase"
                 style={{
-                  background: isSelected ? "rgba(212,168,67,0.85)" : "rgba(0,0,0,0.6)",
-                  color: isSelected ? "#000" : "#888",
+                  background: isSelected ? "rgba(184,144,42,0.9)" : "rgba(0,0,0,0.55)",
+                  color: isSelected ? "#fff" : "#ccc",
                   backdropFilter: "blur(4px)",
                 }}
               >
@@ -129,27 +129,27 @@ function BeforeAfter({ original, transformed }: { original: string; transformed:
     <div className="grid grid-cols-2 gap-3">
       <div
         className="relative rounded-xl overflow-hidden"
-        style={{ border: `1px solid ${hover === "before" ? "#555" : "#1e1e1e"}`, transition: "border-color 0.2s" }}
+        style={{ border: `1px solid ${hover === "before" ? "#c8c0b4" : "#e4ddd0"}`, transition: "border-color 0.2s" }}
         onMouseEnter={() => setHover("before")}
         onMouseLeave={() => setHover(null)}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={original} alt="Street View original" className="w-full object-cover" style={{ aspectRatio: "1/1" }} />
         <div className="absolute bottom-0 inset-x-0 py-2 text-center text-xs tracking-widest uppercase"
-          style={{ background: "rgba(0,0,0,0.6)", color: "#888", backdropFilter: "blur(4px)" }}>
+          style={{ background: "rgba(0,0,0,0.55)", color: "#ccc", backdropFilter: "blur(4px)" }}>
           Before
         </div>
       </div>
       <div
         className="relative rounded-xl overflow-hidden"
-        style={{ border: `1px solid ${hover === "after" ? "#d4a843" : "#2a2a1a"}`, transition: "border-color 0.2s", boxShadow: hover === "after" ? "0 0 16px rgba(212,168,67,0.2)" : "none" }}
+        style={{ border: `1px solid ${hover === "after" ? "#b8902a" : "#e4ddd0"}`, transition: "border-color 0.2s", boxShadow: hover === "after" ? "0 0 16px rgba(184,144,42,0.2)" : "none" }}
         onMouseEnter={() => setHover("after")}
         onMouseLeave={() => setHover(null)}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={transformed} alt="AI luxury result" className="w-full object-cover" style={{ aspectRatio: "1/1" }} />
         <div className="absolute bottom-0 inset-x-0 py-2 text-center text-xs tracking-widest uppercase"
-          style={{ background: "rgba(0,0,0,0.6)", color: "#d4a843", backdropFilter: "blur(4px)" }}>
+          style={{ background: "rgba(0,0,0,0.55)", color: "#d4a843", backdropFilter: "blur(4px)" }}>
           After
         </div>
       </div>
@@ -162,7 +162,7 @@ function BeforeAfter({ original, transformed }: { original: string; transformed:
 function HistoryCard({ item, onSelect, isActive }: { item: HistoryItem; onSelect: () => void; isActive: boolean }) {
   return (
     <button onClick={onSelect} className="relative group flex-shrink-0 w-24 aspect-square rounded-lg overflow-hidden transition-all duration-200"
-      style={{ border: isActive ? "2px solid #d4a843" : "2px solid #1e1e1e", boxShadow: isActive ? "0 0 12px rgba(212,168,67,0.3)" : "none" }}>
+      style={{ border: isActive ? "2px solid #b8902a" : "2px solid #e4ddd0", boxShadow: isActive ? "0 0 12px rgba(184,144,42,0.3)" : "none" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={item.imageBase64} alt={item.address} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-1">
@@ -297,28 +297,36 @@ export default function Home() {
   const isLoading = step === "picking-angle" && angles.length === 0;
 
   return (
-    <main className="min-h-screen" style={{ background: "#0a0a0a" }}>
+    <main className="min-h-screen" style={{ background: "#f7f4ef" }}>
       {/* ── Header ── */}
-      <header className="border-b" style={{ borderColor: "#1a1a1a" }}>
-        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
+      <header className="border-b bg-white" style={{ borderColor: "#e4ddd0" }}>
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)" }}>
-              <span className="text-black font-semibold text-sm">L</span>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)" }}>
+              <span className="text-white font-semibold text-sm">L</span>
             </div>
             <div>
-              <span className="font-light tracking-[0.15em] text-lg" style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#e8e8e8" }}>LUX</span>
-              <span className="font-semibold tracking-[0.15em] text-lg" style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#d4a843" }}>VISION</span>
-              <span className="ml-2 text-xs tracking-widest uppercase" style={{ color: "#4a4a4a" }}>AI</span>
+              <span className="font-light tracking-[0.15em] text-lg"
+                style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#1a1a1a" }}>LUX</span>
+              <span className="font-semibold tracking-[0.15em] text-lg"
+                style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#b8902a" }}>VISION</span>
+              <span className="ml-2 text-xs tracking-widest uppercase" style={{ color: "#bbb8b0" }}>AI</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-xs tracking-widest uppercase px-3 py-1.5 rounded-lg transition-colors"
-              style={{ color: "#888", border: "1px solid #1e1e1e" }}>
+          <div className="flex items-center gap-2">
+            {userEmail && (
+              <span className="hidden sm:block text-xs mr-2" style={{ color: "#888880" }}>{userEmail}</span>
+            )}
+            <Link href="/dashboard"
+              className="text-xs tracking-widest uppercase px-3 py-1.5 rounded-lg font-medium transition-colors"
+              style={{ color: "#b8902a", background: "rgba(184,144,42,0.08)", border: "1px solid rgba(184,144,42,0.2)" }}>
               History
             </Link>
             {userEmail && (
-              <button onClick={handleSignOut} className="text-xs tracking-widest uppercase px-3 py-1.5 rounded-lg transition-colors"
-                style={{ color: "#555", border: "1px solid #1e1e1e" }}>
+              <button onClick={handleSignOut}
+                className="text-xs tracking-widest uppercase px-3 py-1.5 rounded-lg transition-colors"
+                style={{ color: "#888880", border: "1px solid #e4ddd0", background: "#fff" }}>
                 Sign Out
               </button>
             )}
@@ -326,53 +334,60 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-6 py-10">
         {/* ── Hero ── */}
-        <div className="text-center mb-14">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-light leading-tight mb-4"
-            style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#e8e8e8" }}>
+        <div className="text-center mb-10">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-light leading-tight mb-3"
+            style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#1a1a1a" }}>
             Transform Any Address Into{" "}
-            <span style={{ background: "linear-gradient(135deg, #f0d080 0%, #d4a843 50%, #b8902a 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+            <span style={{ background: "linear-gradient(135deg, #d4a843 0%, #b8902a 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
               Magazine Art
             </span>
           </h1>
-          <p className="text-base font-light tracking-wide max-w-lg mx-auto" style={{ color: "#555" }}>
+          <p className="text-base font-light max-w-lg mx-auto" style={{ color: "#888880" }}>
             We pull the real Street View photo and transform it into a luxury listing image using AI.
           </p>
         </div>
 
         {/* ── Input card ── */}
-        <div className="rounded-2xl p-8 mb-8 relative overflow-hidden"
-          style={{ background: "#111111", border: "1px solid #1e1e1e", boxShadow: "0 24px 60px rgba(0,0,0,0.5)" }}>
-          <div className="absolute top-0 left-0 w-64 h-32 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at top left, rgba(212,168,67,0.06) 0%, transparent 70%)" }} />
-
-          <div className="grid md:grid-cols-2 gap-6 relative z-10">
+        <div className="rounded-2xl p-7 mb-6 bg-white" style={{ border: "1px solid #e4ddd0", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+          <div className="grid md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <label className="block text-xs tracking-widest uppercase mb-3" style={{ color: "#555" }}>Property Address</label>
+              <label className="block text-xs tracking-widest uppercase mb-2 font-medium" style={{ color: "#888880" }}>
+                Property Address
+              </label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => { setAddress(e.target.value); if (step !== "input") handleReset(); }}
                 onKeyDown={(e) => e.key === "Enter" && step === "input" && handleFetchAngles()}
                 placeholder="e.g. 1600 Mulholland Drive, Los Angeles, CA"
-                className="w-full px-5 py-4 rounded-xl text-sm font-light transition-all duration-200 placeholder:text-gray-700"
-                style={{ background: "#0d0d0d", border: "1px solid #2a2a2a", color: "#e8e8e8", boxShadow: address ? "0 0 0 1px rgba(212,168,67,0.3)" : "none", borderColor: address ? "#3a3020" : "#2a2a2a" }}
+                className="w-full px-5 py-3.5 rounded-xl text-sm transition-all duration-200"
+                style={{
+                  background: "#f7f4ef",
+                  border: `1px solid ${address ? "#d4a843" : "#ddd8ce"}`,
+                  color: "#1a1a1a",
+                  boxShadow: address ? "0 0 0 3px rgba(184,144,42,0.1)" : "none",
+                }}
               />
             </div>
 
             <div>
-              <label className="block text-xs tracking-widest uppercase mb-3" style={{ color: "#555" }}>Visual Style</label>
+              <label className="block text-xs tracking-widest uppercase mb-2 font-medium" style={{ color: "#888880" }}>
+                Visual Style
+              </label>
               <div className="relative">
                 <select value={style} onChange={(e) => setStyle(e.target.value as StyleKey)}
-                  className="w-full appearance-none px-5 py-4 rounded-xl text-sm font-light cursor-pointer"
-                  style={{ background: "#0d0d0d", border: "1px solid #2a2a2a", color: "#e8e8e8" }}>
+                  className="w-full appearance-none px-5 py-3.5 rounded-xl text-sm cursor-pointer"
+                  style={{ background: "#f7f4ef", border: "1px solid #ddd8ce", color: "#1a1a1a" }}>
                   {styleKeys.map((key) => (
-                    <option key={key} value={key} style={{ background: "#111" }}>{STYLE_CONFIGS[key].label}</option>
+                    <option key={key} value={key}>{STYLE_CONFIGS[key].label}</option>
                   ))}
                 </select>
                 <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="#d4a843" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 4l4 4 4-4" stroke="#b8902a" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -381,11 +396,16 @@ export default function Home() {
               <button
                 onClick={handleFetchAngles}
                 disabled={step === "generating" || isLoading}
-                className="w-full py-4 rounded-xl font-light text-sm tracking-widest uppercase flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: (step === "generating" || isLoading) ? "#1a1a1a" : "linear-gradient(135deg, #d4a843 0%, #9a7520 100%)", color: (step === "generating" || isLoading) ? "#555" : "#000", boxShadow: (step === "generating" || isLoading) ? "none" : "0 8px 24px rgba(212,168,67,0.25)" }}
+                className="w-full py-3.5 rounded-xl text-sm tracking-widest uppercase flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  background: (step === "generating" || isLoading) ? "#e4ddd0" : "linear-gradient(135deg, #d4a843, #9a7520)",
+                  color: (step === "generating" || isLoading) ? "#888880" : "#fff",
+                  boxShadow: (step === "generating" || isLoading) ? "none" : "0 4px 16px rgba(184,144,42,0.35)",
+                }}
               >
                 {isLoading ? (
-                  <><div className="w-4 h-4 rounded-full border-2 border-transparent" style={{ borderTopColor: "#d4a843", animation: "spin 0.8s linear infinite" }} />Loading Views…</>
+                  <><div className="w-4 h-4 rounded-full border-2 border-transparent"
+                    style={{ borderTopColor: "#b8902a", animation: "spin 0.8s linear infinite" }} />Loading Views…</>
                 ) : (
                   <><SearchIcon />Find Property</>
                 )}
@@ -394,8 +414,8 @@ export default function Home() {
           </div>
 
           {error && (
-            <div className="mt-5 px-4 py-3 rounded-lg text-sm"
-              style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#f87171" }}>
+            <div className="mt-4 px-4 py-3 rounded-xl text-sm"
+              style={{ background: "#fff0f0", border: "1px solid #fcc", color: "#cc3333" }}>
               {error}
             </div>
           )}
@@ -403,25 +423,26 @@ export default function Home() {
 
         {/* ── Angle picker ── */}
         {step === "picking-angle" && angles.length > 0 && (
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div className="grid md:grid-cols-3 gap-5 mb-6">
             <div className="md:col-span-2">
               <AnglePicker angles={angles} selected={selectedHeading} onSelect={setSelectedHeading} />
             </div>
             <div className="flex flex-col gap-4">
-              <div className="rounded-2xl p-5" style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-                <p className="text-xs tracking-widest uppercase mb-3" style={{ color: "#555" }}>Ready to Generate</p>
-                <p className="text-sm font-light mb-4" style={{ color: "#666" }}>
-                  Pick the view that shows the front of the property, then generate.
+              <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+                <p className="text-xs tracking-widest uppercase mb-2 font-medium" style={{ color: "#888880" }}>
+                  Ready to Generate
                 </p>
-                <button
-                  onClick={() => handleGenerate(selectedHeading)}
-                  className="w-full py-3 rounded-xl font-light text-sm tracking-widest uppercase flex items-center justify-center gap-2"
-                  style={{ background: "linear-gradient(135deg, #d4a843 0%, #9a7520 100%)", color: "#000", boxShadow: "0 8px 24px rgba(212,168,67,0.25)" }}
-                >
+                <p className="text-sm mb-4" style={{ color: "#888880" }}>
+                  Pick the view showing the front of the property, then generate.
+                </p>
+                <button onClick={() => handleGenerate(selectedHeading)}
+                  className="w-full py-3 rounded-xl text-sm tracking-widest uppercase flex items-center justify-center gap-2 font-medium"
+                  style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)", color: "#fff", boxShadow: "0 4px 16px rgba(184,144,42,0.3)" }}>
                   <SparkleIcon />Generate Image
                 </button>
-                <button onClick={handleReset} className="mt-2 w-full py-2.5 rounded-xl text-xs tracking-widest uppercase text-center"
-                  style={{ background: "#1a1a1a", color: "#555", border: "1px solid #2a2a2a" }}>
+                <button onClick={handleReset}
+                  className="mt-2 w-full py-2.5 rounded-xl text-xs tracking-widest uppercase text-center"
+                  style={{ background: "#f7f4ef", color: "#888880", border: "1px solid #e4ddd0" }}>
                   Change Address
                 </button>
               </div>
@@ -431,7 +452,7 @@ export default function Home() {
 
         {/* ── Generating ── */}
         {step === "generating" && (
-          <div className="rounded-2xl overflow-hidden mb-8" style={{ border: "1px solid #1e1e1e", background: "#111" }}>
+          <div className="rounded-2xl overflow-hidden mb-6 bg-white" style={{ border: "1px solid #e4ddd0" }}>
             <div className="p-4">
               <LoadingSkeleton label="Transforming with AI" />
             </div>
@@ -441,19 +462,19 @@ export default function Home() {
         {/* ── Result ── */}
         <div ref={resultRef}>
           {step === "result" && currentImage && (
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="md:col-span-2 rounded-2xl overflow-hidden" style={{ border: "1px solid #1e1e1e", background: "#111" }}>
+            <div className="grid md:grid-cols-3 gap-5">
+              <div className="md:col-span-2 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid #e4ddd0" }}>
                 <div className="p-4">
                   <BeforeAfter original={currentImage.originalBase64} transformed={currentImage.imageBase64} />
                   <div className="mt-4 flex gap-2">
                     <button onClick={handleDownload}
                       className="flex-1 py-2.5 rounded-xl text-xs tracking-widest uppercase flex items-center justify-center gap-2 font-medium"
-                      style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)", color: "#000" }}>
+                      style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)", color: "#fff" }}>
                       <DownloadIcon />Download AI Image
                     </button>
                     <button onClick={() => setStep("picking-angle")}
-                      className="px-4 py-2.5 rounded-xl text-xs tracking-widest uppercase flex items-center justify-center gap-2 font-light"
-                      style={{ background: "#1a1a1a", color: "#888", border: "1px solid #2a2a2a" }}>
+                      className="px-4 py-2.5 rounded-xl text-xs tracking-widest uppercase flex items-center justify-center gap-2"
+                      style={{ background: "#f7f4ef", color: "#888880", border: "1px solid #e4ddd0" }}>
                       <RefreshIcon />Redo
                     </button>
                   </div>
@@ -461,51 +482,57 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col gap-4">
-                <div className="rounded-2xl p-5" style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-                  <h3 className="text-xs tracking-widest uppercase mb-4" style={{ color: "#555" }}>Image Details</h3>
+                <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+                  <h3 className="text-xs tracking-widest uppercase mb-4 font-medium" style={{ color: "#888880" }}>
+                    Image Details
+                  </h3>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#3a3a3a" }}>Address</p>
-                      <p className="text-sm font-light" style={{ color: "#e0e0e0" }}>{currentImage.address}</p>
+                      <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#bbb8b0" }}>Address</p>
+                      <p className="text-sm font-medium" style={{ color: "#1a1a1a" }}>{currentImage.address}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#3a3a3a" }}>Style</p>
-                      <span className="inline-block px-2 py-1 rounded text-xs" style={{ background: "rgba(212,168,67,0.12)", color: "#d4a843" }}>
+                      <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#bbb8b0" }}>Style</p>
+                      <span className="inline-block px-2 py-1 rounded-lg text-xs font-medium"
+                        style={{ background: "rgba(184,144,42,0.1)", color: "#b8902a" }}>
                         {STYLE_CONFIGS[currentImage.style as StyleKey]?.label}
                       </span>
                     </div>
                     <div>
-                      <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#3a3a3a" }}>Source</p>
-                      <p className="text-xs font-light" style={{ color: "#555" }}>Google Street View → OpenAI gpt-image-1</p>
+                      <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#bbb8b0" }}>Source</p>
+                      <p className="text-xs" style={{ color: "#888880" }}>Google Street View → OpenAI</p>
                     </div>
                   </div>
 
                   <button onClick={() => setStep("picking-angle")}
                     className="mt-5 w-full py-2.5 rounded-xl text-xs tracking-widest uppercase flex items-center justify-center gap-2"
-                    style={{ background: "#1a1a1a", color: "#666", border: "1px solid #2a2a2a" }}>
+                    style={{ background: "#f7f4ef", color: "#888880", border: "1px solid #e4ddd0" }}>
                     <RefreshIcon />Try Different Angle
                   </button>
 
                   <button onClick={() => setShowPrompt((p) => !p)}
-                    className="mt-2 w-full text-[10px] tracking-widest uppercase text-center py-2 rounded transition-colors"
-                    style={{ color: "#3a3a3a", border: "1px dashed #1e1e1e" }}>
+                    className="mt-2 w-full text-[10px] tracking-widest uppercase text-center py-2 rounded-lg"
+                    style={{ color: "#bbb8b0", border: "1px dashed #e4ddd0" }}>
                     {showPrompt ? "Hide Prompt" : "View Prompt"}
                   </button>
 
                   {showPrompt && (
-                    <div className="mt-3 p-3 rounded-lg text-[11px] leading-relaxed font-light"
-                      style={{ background: "#0d0d0d", color: "#555", border: "1px solid #1a1a1a" }}>
+                    <div className="mt-3 p-3 rounded-lg text-[11px] leading-relaxed"
+                      style={{ background: "#f7f4ef", color: "#888880", border: "1px solid #e4ddd0" }}>
                       {lastPrompt}
                     </div>
                   )}
                 </div>
 
                 {history.length > 1 && (
-                  <div className="rounded-2xl p-4" style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-                    <h3 className="text-[10px] tracking-widest uppercase mb-3" style={{ color: "#3a3a3a" }}>Recent</h3>
+                  <div className="rounded-2xl p-4 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+                    <h3 className="text-[10px] tracking-widest uppercase mb-3 font-medium" style={{ color: "#bbb8b0" }}>
+                      Recent
+                    </h3>
                     <div className="flex gap-2 flex-wrap">
                       {history.map((item) => (
-                        <HistoryCard key={item.id} item={item} isActive={currentImage?.id === item.id} onSelect={() => setCurrentImage(item)} />
+                        <HistoryCard key={item.id} item={item} isActive={currentImage?.id === item.id}
+                          onSelect={() => setCurrentImage(item)} />
                       ))}
                     </div>
                   </div>
@@ -515,12 +542,12 @@ export default function Home() {
           )}
 
           {step === "input" && !currentImage && (
-            <div className="text-center py-24">
-              <div className="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center"
-                style={{ background: "rgba(212,168,67,0.06)", border: "1px solid rgba(212,168,67,0.12)" }}>
+            <div className="text-center py-20">
+              <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center"
+                style={{ background: "rgba(184,144,42,0.08)", border: "1px solid rgba(184,144,42,0.15)" }}>
                 <SparkleIcon />
               </div>
-              <p className="text-sm font-light tracking-widest uppercase" style={{ color: "#2a2a2a" }}>
+              <p className="text-sm tracking-widest uppercase" style={{ color: "#bbb8b0" }}>
                 Enter an address above to get started
               </p>
             </div>
@@ -528,8 +555,8 @@ export default function Home() {
         </div>
       </div>
 
-      <footer className="mt-20 border-t py-8 text-center" style={{ borderColor: "#141414" }}>
-        <p className="text-xs tracking-widest uppercase" style={{ color: "#2a2a2a" }}>
+      <footer className="mt-16 border-t py-6 text-center bg-white" style={{ borderColor: "#e4ddd0" }}>
+        <p className="text-xs tracking-widest uppercase" style={{ color: "#bbb8b0" }}>
           LuxVision AI · Google Street View + OpenAI · Images are AI-enhanced
         </p>
       </footer>
