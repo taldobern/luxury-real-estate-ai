@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         input: {
           prompt,
           image: uploadedImageBase64,
-          prompt_strength: 0.72,
+          prompt_strength: 0.35,
           num_inference_steps: 28,
           guidance: 3,
           output_format: "png",
