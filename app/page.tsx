@@ -88,8 +88,9 @@ function AnglePicker({
       <p className="text-xs mb-4" style={{ color: "#bbb8b0" }}>
         Pick the angle that shows the front of the house
       </p>
-      <div className="grid grid-cols-2 gap-2">
-        {angles.map((angle) => {
+      {/* Street view angles */}
+      <div className="grid grid-cols-2 gap-2 mb-2">
+        {angles.filter(a => a.source === "streetview").map((angle) => {
           const isSelected = angle.heading === selected;
           return (
             <button
@@ -117,6 +118,43 @@ function AnglePicker({
           );
         })}
       </div>
+
+      {/* Aerial / Satellite option — full width */}
+      {angles.filter(a => a.source === "satellite").map((angle) => {
+        const isSelected = angle.heading === selected;
+        return (
+          <button
+            key="satellite"
+            onClick={() => onSelect(angle.heading)}
+            className="relative w-full rounded-xl overflow-hidden transition-all duration-200"
+            style={{
+              border: isSelected ? "2px solid #b8902a" : "2px solid #e4ddd0",
+              boxShadow: isSelected ? "0 0 20px rgba(184,144,42,0.3)" : "none",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={angle.imageBase64} alt="Aerial View" className="w-full object-cover" style={{ aspectRatio: "2/1" }} />
+            {/* Drone badge */}
+            <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] tracking-widest uppercase font-semibold"
+              style={{ background: "rgba(0,0,0,0.6)", color: "#d4a843", backdropFilter: "blur(4px)" }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+              Drone
+            </div>
+            <div
+              className="absolute bottom-0 inset-x-0 py-2 text-center text-[10px] tracking-widest uppercase"
+              style={{
+                background: isSelected ? "rgba(184,144,42,0.9)" : "rgba(0,0,0,0.55)",
+                color: isSelected ? "#fff" : "#ccc",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              Aerial View — Select for Drone Shot
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 }

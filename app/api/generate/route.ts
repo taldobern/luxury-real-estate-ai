@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI, { toFile } from "openai";
-import { buildPrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
+import { buildPrompt, buildAerialDronePrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 export interface GenerateRequest {
@@ -79,22 +79,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid style selected." }, { status: 400 });
     }
 
-    const prompt = buildPrompt(address.trim(), style);
+    // --- Fetch source image (Street View or Satellite) ---
+    let sourceBuffer: Buffer;
+    let prompt: string;
 
-    // --- Fetch Street View ---
-    let streetViewBuffer: Buffer;
-    try {
-      streetViewBuffer = await fetchStreetView(address.trim(), heading);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not fetch Street View image.";
-      return NextResponse.json({ error: message }, { status: 422 });
+    if (heading === -1) {
+      // Satellite aerial view
+      try {
+        const encoded = encodeURIComponent(address.trim());
+        const key = process.env.GOOGLE_MAPS_API_KEY;
+        const satUrl =
+          `https://maps.googleapis.com/maps/api/staticmap` +
+          `?center=${encoded}&zoom=19&size=1024x1024&maptype=satellite&key=${key}`;
+        const res = await fetch(satUrl);
+        if (!res.ok) throw new Error("Could not fetch satellite image.");
+        sourceBuffer = Buffer.from(await res.arrayBuffer());
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Could not fetch satellite image.";
+        return NextResponse.json({ error: message }, { status: 422 });
+      }
+      prompt = buildAerialDronePrompt(address.trim());
+    } else {
+      // Street View
+      try {
+        sourceBuffer = await fetchStreetView(address.trim(), heading);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Could not fetch Street View image.";
+        return NextResponse.json({ error: message }, { status: 422 });
+      }
+      prompt = buildPrompt(address.trim(), style);
     }
 
-    const originalBase64 = `data:image/jpeg;base64,${streetViewBuffer.toString("base64")}`;
+    const originalBase64 = `data:image/jpeg;base64,${sourceBuffer.toString("base64")}`;
 
     // --- OpenAI image edit ---
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const imageFile = await toFile(streetViewBuffer, "property.jpg", { type: "image/jpeg" });
+    const imageFile = await toFile(sourceBuffer, "property.jpg", { type: "image/jpeg" });
 
     const response = await openai.images.edit({
       model: "gpt-image-1",

@@ -63,7 +63,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = 
 export type StyleKey = keyof typeof STYLE_CONFIGS;
 
 /**
- * Builds the image edit prompt.
+ * Builds the image edit prompt for street-level styles.
  * Always anchors to the real property — enhance, never replace.
  */
 export function buildPrompt(address: string, style: StyleKey): string {
@@ -74,5 +74,22 @@ export function buildPrompt(address: string, style: StyleKey): string {
     `This is the real property at ${address}. ` +
     `The architectural structure must remain identical to the original photo. ` +
     `Photorealistic, 8K quality, sharp focus, magazine cover ready.`
+  );
+}
+
+/**
+ * Builds the aerial drone prompt for satellite source images.
+ * Transforms a flat top-down satellite image into a luxury drone photo.
+ */
+export function buildAerialDronePrompt(address: string): string {
+  return (
+    `Transform this satellite overhead image of a residential property into a photorealistic professional real estate drone photograph. ` +
+    `Render the scene as if captured by a drone at approximately 150 feet altitude, camera angled at 45 degrees looking down toward the property — exactly like luxury real estate aerial brochure photography. ` +
+    `Keep the exact same house footprint, roof shape, lot boundaries, driveway layout, and surrounding structures — do NOT alter or replace any buildings. ` +
+    `Enhance the landscaping: lush vivid green lawn, full tree canopy, manicured hedges, clean pathways. ` +
+    `Natural mid-morning sunlight, soft realistic shadows cast at an angle, vivid blue sky visible at the horizon edges, rich color depth. ` +
+    `Remove all vehicles, debris, and visual clutter. ` +
+    `This is the real property at ${address}. ` +
+    `The result must look indistinguishable from a real drone photograph used in a luxury real estate magazine or brochure — photorealistic, 8K quality, sharp detail.`
   );
 }
