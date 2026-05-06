@@ -7,6 +7,7 @@ export interface GenerateRequest {
   address: string;
   style: StyleKey;
   heading?: number;
+  uploadedImageBase64?: string;
 }
 
 export interface GenerateResponse {
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     // --- Input validation ---
     const body: GenerateRequest = await req.json();
-    const { address, style, heading = 0 } = body;
+    const { address, style, heading = 0, uploadedImageBase64 } = body;
 
     if (!address || typeof address !== "string" || address.trim().length < 5) {
       return NextResponse.json({ error: "Please provide a valid property address." }, { status: 400 });
@@ -79,45 +80,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid style selected." }, { status: 400 });
     }
 
-    // --- Fetch source images ---
-    let streetViewBuffer: Buffer;
-    try {
-      streetViewBuffer = await fetchStreetView(address.trim(), heading);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not fetch Street View image.";
-      return NextResponse.json({ error: message }, { status: 422 });
-    }
-
-    const originalBase64 = `data:image/jpeg;base64,${streetViewBuffer.toString("base64")}`;
-
-    // --- Build prompt and image list ---
+    // --- Fetch / decode source image ---
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     let prompt: string;
-    let imageInput: Awaited<ReturnType<typeof toFile>> | Awaited<ReturnType<typeof toFile>>[];
+    let imageInput: Awaited<ReturnType<typeof toFile>>;
+    let originalBase64: string;
 
-    if (style === "aerial") {
-      // Aerial/Drone: use street view + satellite together
-      let satelliteBuffer: Buffer;
+    if (style === "aerial" && uploadedImageBase64) {
+      // Aerial/Drone: user uploaded a Google Earth screenshot — use it directly
+      const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
+      const uploadedBuffer = Buffer.from(base64Data, "base64");
+      originalBase64 = uploadedImageBase64;
+      prompt = buildAerialDronePrompt(address.trim());
+      imageInput = await toFile(uploadedBuffer, "aerial.jpg", { type: "image/jpeg" });
+    } else {
+      // All other styles (and aerial without upload): Street View
+      let streetViewBuffer: Buffer;
       try {
-        const encoded = encodeURIComponent(address.trim());
-        const key = process.env.GOOGLE_MAPS_API_KEY;
-        const satUrl =
-          `https://maps.googleapis.com/maps/api/staticmap` +
-          `?center=${encoded}&zoom=19&size=1024x1024&maptype=satellite&key=${key}`;
-        const res = await fetch(satUrl);
-        if (!res.ok) throw new Error("Could not fetch satellite image.");
-        satelliteBuffer = Buffer.from(await res.arrayBuffer());
+        streetViewBuffer = await fetchStreetView(address.trim(), heading);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Could not fetch satellite image.";
+        const message = err instanceof Error ? err.message : "Could not fetch Street View image.";
         return NextResponse.json({ error: message }, { status: 422 });
       }
-      prompt = buildAerialDronePrompt(address.trim());
-      imageInput = [
-        await toFile(streetViewBuffer, "street.jpg", { type: "image/jpeg" }),
-        await toFile(satelliteBuffer, "satellite.jpg", { type: "image/jpeg" }),
-      ];
-    } else {
-      // All other styles: street view only
+      originalBase64 = `data:image/jpeg;base64,${streetViewBuffer.toString("base64")}`;
       prompt = buildPrompt(address.trim(), style);
       imageInput = await toFile(streetViewBuffer, "property.jpg", { type: "image/jpeg" });
     }

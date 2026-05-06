@@ -218,6 +218,9 @@ export default function Home() {
   const [angles, setAngles] = useState<StreetViewAngle[]>([]);
   const [selectedHeading, setSelectedHeading] = useState(0);
 
+  // Aerial upload state
+  const [aerialUpload, setAerialUpload] = useState<string | null>(null);
+
   // Result state
   const [currentImage, setCurrentImage] = useState<HistoryItem | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -226,12 +229,27 @@ export default function Home() {
 
   const resultRef = useRef<HTMLDivElement>(null);
 
-  // Step 1 — fetch all 4 Street View angles
+  function handleAerialFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setAerialUpload(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  // Step 1 — for aerial: go straight to picking-angle (no Street View fetch needed)
+  //           for others: fetch 4 Street View angles
   async function handleFetchAngles() {
     if (!address.trim()) { setError("Please enter a property address."); return; }
     setError(null);
-    setStep("picking-angle");
+    setAerialUpload(null);
 
+    if (style === "aerial") {
+      setStep("picking-angle");
+      return;
+    }
+
+    setStep("picking-angle");
     try {
       const res = await fetch("/api/streetview", {
         method: "POST",
@@ -248,7 +266,7 @@ export default function Home() {
     }
   }
 
-  // Step 2 — generate with chosen angle
+  // Step 2 — generate
   async function handleGenerate(heading: number) {
     setError(null);
     setStep("generating");
@@ -257,7 +275,12 @@ export default function Home() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
-        body: JSON.stringify({ address: address.trim(), style, heading }),
+        body: JSON.stringify({
+          address: address.trim(),
+          style,
+          heading,
+          ...(style === "aerial" && aerialUpload ? { uploadedImageBase64: aerialUpload } : {}),
+        }),
       });
       const data: GenerateResponse & { error?: string } = await res.json();
       if (!res.ok || data.error) { setError(data.error ?? "Generation failed."); setStep("picking-angle"); return; }
@@ -294,6 +317,7 @@ export default function Home() {
   function handleReset() {
     setStep("input");
     setAngles([]);
+    setAerialUpload(null);
     setError(null);
   }
 
@@ -429,18 +453,76 @@ export default function Home() {
         {step === "picking-angle" && angles.length > 0 && (
           <div className="grid md:grid-cols-3 gap-5 mb-6">
             <div className="md:col-span-2">
-              <AnglePicker angles={angles} selected={selectedHeading} onSelect={setSelectedHeading} isAerial={style === "aerial"} />
+              {style === "aerial" ? (
+                /* ── Aerial: Google Earth upload panel ── */
+                <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+                  <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Aerial / Drone View</p>
+                  <p className="text-xs mb-5" style={{ color: "#bbb8b0" }}>
+                    Open Google Earth, find the 3D view of the property, screenshot it, then upload below.
+                  </p>
+
+                  {/* Google Earth link */}
+                  <a
+                    href={`https://earth.google.com/web/search/${address.trim().replace(/\s+/g, "+")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-xs tracking-widest uppercase font-medium mb-4 transition-all"
+                    style={{ background: "#f0ece4", border: "1px solid #e4ddd0", color: "#b8902a" }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+                    </svg>
+                    Open in Google Earth →
+                  </a>
+
+                  {/* Upload area */}
+                  <label className="flex flex-col items-center justify-center w-full rounded-xl cursor-pointer transition-all"
+                    style={{
+                      border: aerialUpload ? "2px solid #b8902a" : "2px dashed #e4ddd0",
+                      background: aerialUpload ? "#fff" : "#faf8f5",
+                      minHeight: "180px",
+                    }}>
+                    {aerialUpload ? (
+                      <div className="relative w-full">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={aerialUpload} alt="Uploaded Google Earth screenshot" className="w-full rounded-xl object-cover" style={{ maxHeight: "260px" }} />
+                        <div className="absolute top-2 right-2 px-2 py-1 rounded-lg text-[10px] tracking-widest uppercase font-bold"
+                          style={{ background: "rgba(184,144,42,0.9)", color: "#fff" }}>
+                          ✓ Ready
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-3 p-8">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#bbb8b0" strokeWidth="1.5">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        <p className="text-sm font-light" style={{ color: "#888880" }}>Upload Google Earth screenshot</p>
+                        <p className="text-xs" style={{ color: "#bbb8b0" }}>PNG, JPG, WEBP</p>
+                      </div>
+                    )}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAerialFileChange} />
+                  </label>
+                </div>
+              ) : (
+                /* ── Street-level: angle picker ── */
+                <AnglePicker angles={angles} selected={selectedHeading} onSelect={setSelectedHeading} isAerial={false} />
+              )}
             </div>
+
             <div className="flex flex-col gap-4">
               <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
                 <p className="text-xs tracking-widest uppercase mb-2 font-medium" style={{ color: "#888880" }}>
                   Ready to Generate
                 </p>
                 <p className="text-sm mb-4" style={{ color: "#888880" }}>
-                  Pick the view showing the front of the property, then generate.
+                  {style === "aerial"
+                    ? aerialUpload ? "Screenshot uploaded. Hit generate!" : "Upload your Google Earth screenshot first."
+                    : "Pick the view showing the front of the property, then generate."}
                 </p>
-                <button onClick={() => handleGenerate(selectedHeading)}
-                  className="w-full py-3 rounded-xl text-sm tracking-widest uppercase flex items-center justify-center gap-2 font-medium"
+                <button
+                  onClick={() => handleGenerate(selectedHeading)}
+                  disabled={style === "aerial" && !aerialUpload}
+                  className="w-full py-3 rounded-xl text-sm tracking-widest uppercase flex items-center justify-center gap-2 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)", color: "#fff", boxShadow: "0 4px 16px rgba(184,144,42,0.3)" }}>
                   <SparkleIcon />Generate Image
                 </button>
