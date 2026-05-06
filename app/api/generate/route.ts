@@ -1,83 +1,164 @@
 import { NextRequest, NextResponse } from "next/server";
-import { InferenceClient } from "@huggingface/inference";
+import OpenAI, { toFile } from "openai";
 import { buildPrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 export interface GenerateRequest {
   address: string;
   style: StyleKey;
+  heading?: number;
 }
 
 export interface GenerateResponse {
-  imageBase64: string; // data:image/png;base64,...
+  imageBase64: string;
+  originalBase64: string;
   prompt: string;
+}
+
+async function fetchStreetView(address: string, heading = 0): Promise<Buffer> {
+  const encoded = encodeURIComponent(address);
+  const key = process.env.GOOGLE_MAPS_API_KEY;
+
+  const svUrl =
+    `https://maps.googleapis.com/maps/api/streetview` +
+    `?size=1024x1024&location=${encoded}&fov=90&heading=${heading}&pitch=0&source=outdoor&key=${key}`;
+
+  const response = await fetch(svUrl);
+  if (!response.ok) throw new Error("Failed to fetch Street View image.");
+  return Buffer.from(await response.arrayBuffer());
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body: GenerateRequest = await req.json();
-    const { address, style } = body;
+    // --- Auth check ---
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Please sign in to generate images." }, { status: 401 });
+    }
+
+    // --- Usage limit check ---
+    const admin = createAdminClient();
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("images_used, images_limit, trial_ends_at, plan")
+      .eq("id", user.id)
+      .single();
+
+    if (profile) {
+      // Check trial expiry
+      if (profile.plan === "trial" && new Date(profile.trial_ends_at) < new Date()) {
+        return NextResponse.json(
+          { error: "Your free trial has expired. Please contact us to continue." },
+          { status: 403 }
+        );
+      }
+      // Check image limit
+      if (profile.images_used >= profile.images_limit) {
+        return NextResponse.json(
+          { error: `You've reached your ${profile.images_limit} image limit for this plan.` },
+          { status: 403 }
+        );
+      }
+    }
 
     // --- Input validation ---
+    const body: GenerateRequest = await req.json();
+    const { address, style, heading = 0 } = body;
+
     if (!address || typeof address !== "string" || address.trim().length < 5) {
-      return NextResponse.json(
-        { error: "Please provide a valid property address (at least 5 characters)." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Please provide a valid property address." }, { status: 400 });
     }
 
     if (!style || !STYLE_CONFIGS[style]) {
-      return NextResponse.json(
-        { error: "Invalid style selected." },
-        { status: 400 }
-      );
-    }
-
-    if (!process.env.HF_API_TOKEN) {
-      return NextResponse.json(
-        { error: "Hugging Face token not configured. Add HF_API_TOKEN to your .env.local file." },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Invalid style selected." }, { status: 400 });
     }
 
     const prompt = buildPrompt(address.trim(), style);
 
-    const client = new InferenceClient(process.env.HF_API_TOKEN);
+    // --- Fetch Street View ---
+    let streetViewBuffer: Buffer;
+    try {
+      streetViewBuffer = await fetchStreetView(address.trim(), heading);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not fetch Street View image.";
+      return NextResponse.json({ error: message }, { status: 422 });
+    }
 
-    // FLUX.1-dev — high quality, free on HF Inference API
-    const result = await client.textToImage({
-      model: "black-forest-labs/FLUX.1-dev",
-      inputs: prompt,
-      parameters: {
-        width: 1024,
-        height: 1024,
-      },
+    const originalBase64 = `data:image/jpeg;base64,${streetViewBuffer.toString("base64")}`;
+
+    // --- OpenAI image edit ---
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const imageFile = await toFile(streetViewBuffer, "property.jpg", { type: "image/jpeg" });
+
+    const response = await openai.images.edit({
+      model: "gpt-image-1",
+      image: imageFile,
+      prompt,
+      n: 1,
+      size: "1024x1024",
+      quality: "high",
     });
 
-    // HF Inference returns a Blob
-    const blob = result as unknown as Blob;
-    const arrayBuffer = await blob.arrayBuffer();
-    const imageBase64 = `data:image/png;base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+    const imageData = response.data?.[0];
+    if (!imageData) {
+      return NextResponse.json({ error: "No image returned by OpenAI." }, { status: 500 });
+    }
 
-    return NextResponse.json({ imageBase64, prompt } satisfies GenerateResponse);
+    let imageBuffer: Buffer;
+    if (imageData.b64_json) {
+      imageBuffer = Buffer.from(imageData.b64_json, "base64");
+    } else if (imageData.url) {
+      const imgRes = await fetch(imageData.url);
+      imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+    } else {
+      return NextResponse.json({ error: "Unexpected API response format." }, { status: 500 });
+    }
+
+    const imageBase64 = `data:image/png;base64,${imageBuffer.toString("base64")}`;
+
+    // --- Upload to Supabase Storage ---
+    const fileName = `${user.id}/${Date.now()}.png`;
+    const { error: uploadError } = await admin.storage
+      .from("generations")
+      .upload(fileName, imageBuffer, { contentType: "image/png", upsert: false });
+
+    let imageUrl = imageBase64; // fallback to base64 if upload fails
+
+    if (!uploadError) {
+      const { data: urlData } = admin.storage.from("generations").getPublicUrl(fileName);
+      imageUrl = urlData.publicUrl;
+
+      // Save generation record + increment usage
+      await Promise.all([
+        admin.from("generations").insert({
+          user_id: user.id,
+          address: address.trim(),
+          style,
+          image_url: imageUrl,
+          prompt,
+        }),
+        admin.from("profiles")
+          .update({ images_used: (profile?.images_used ?? 0) + 1 })
+          .eq("id", user.id),
+      ]);
+    }
+
+    return NextResponse.json({ imageBase64, originalBase64, prompt } satisfies GenerateResponse);
   } catch (err: unknown) {
     console.error("[/api/generate] Error:", err);
 
+    if (err instanceof OpenAI.APIError) {
+      const msg =
+        err.status === 429 ? "Rate limit reached. Please wait and try again." :
+        err.status === 401 ? "Invalid OpenAI API key." :
+        err.status === 400 ? "OpenAI rejected the image. Try a different address or style." :
+        err.message || "OpenAI API error.";
+      return NextResponse.json({ error: msg }, { status: err.status ?? 500 });
+    }
+
     const message = err instanceof Error ? err.message : "An unexpected error occurred.";
-
-    if (message.includes("401") || message.toLowerCase().includes("unauthorized")) {
-      return NextResponse.json(
-        { error: "Invalid Hugging Face token. Check HF_API_TOKEN in your .env.local file." },
-        { status: 401 }
-      );
-    }
-
-    if (message.includes("503") || message.toLowerCase().includes("loading")) {
-      return NextResponse.json(
-        { error: "Model is loading, please wait 20 seconds and try again." },
-        { status: 503 }
-      );
-    }
-
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

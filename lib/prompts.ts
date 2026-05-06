@@ -1,53 +1,78 @@
-// Style definitions — each entry maps a UI label to prompt modifiers
 export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = {
   aerial: {
     label: "Aerial / Drone View",
     prompt:
-      "photorealistic aerial drone-style image from a slightly elevated bird's-eye perspective (approx. 20 feet above ground level), maintaining accurate architectural proportions, bright natural daylight, balanced exposure, luxury real estate drone photography",
+      "Enhance this real property photo to look like a professional luxury real estate drone photograph. " +
+      "Keep the exact same house, architecture, layout, and surroundings — do NOT change the building structure. " +
+      "Brighten the image with natural daylight, remove harsh shadows, balance the exposure, enhance the sky to a vivid blue with soft clouds. " +
+      "Clean up the landscaping — greener grass, trimmed hedges. Remove all vehicles from the driveway. " +
+      "Remove utility lines, street signs, and any visible address numbers. " +
+      "The result should look like a bright clear-day professional drone photo used in a luxury real estate brochure.",
   },
   "luxury-modern": {
     label: "Luxury Modern",
     prompt:
-      "ultra-modern luxury architecture, clean lines, floor-to-ceiling glass, infinity pool, immaculate landscaping, blue-sky daytime, professional architectural photography, crisp shadows, premium materials — marble, steel, glass",
+      "Enhance this real property photo for a luxury real estate magazine cover. " +
+      "Keep the exact same house structure and architecture — do NOT redesign or replace the building. " +
+      "Improve the exterior finish to look premium — clean paint, sharp edges, polished surfaces. " +
+      "Enhance landscaping with lush green lawn and manicured hedges. " +
+      "Brighten to a perfect sunny day with vivid blue sky. Remove all vehicles, clutter, and utility wires. " +
+      "The house must remain recognizable as the same property, just elevated to luxury magazine quality.",
   },
   sunset: {
     label: "Golden Hour / Sunset",
     prompt:
-      "golden hour sunset lighting, warm amber and rose tones, dramatic sky, glowing interior lights, professional twilight real estate photography, long shadows, romantic atmosphere, magazine-quality color grading",
+      "Enhance this real property photo into a photorealistic luxury real estate twilight image at blue hour. " +
+      "Keep the exact same house, architecture, and layout — do NOT change or replace the building structure. " +
+      "Naturally light the home with warm glowing interior lights visible through windows and soft exterior architectural lighting. " +
+      "Enhance the sky with realistic blue hour twilight tones — deep blue, soft purple, muted pink, faint orange on the horizon — subtle and natural, not oversaturated. " +
+      "Brighten shadows naturally without overexposing highlights. Increase clarity, contrast, and depth while keeping the result realistic and elegant. " +
+      "Enhance the surrounding landscape with soft ambient lighting. Remove all vehicles, utility lines, and street clutter. " +
+      "Style: luxury architectural photography, magazine-quality HDR, professional drone twilight real estate, cinematic but photorealistic. " +
+      "The result must feel like a real photograph — emotionally captivating and elegant, like a Mansion Global or Architectural Digest feature.",
   },
   cinematic: {
     label: "Cinematic",
     prompt:
-      "cinematic wide-angle composition, anamorphic lens flare, deep color grading, dramatic contrast, moody atmosphere, Hollywood-level production quality, sharp foreground with subtle depth-of-field background blur",
+      "Enhance this real property photo with cinematic color grading for a luxury real estate presentation. " +
+      "Keep the exact same house and architecture — do NOT redesign the building. " +
+      "Apply rich contrast, deep shadows, and dramatic sky. Enhance landscaping and curb appeal. " +
+      "Remove all vehicles, clutter, and utility lines. " +
+      "The result should look like a high-end architectural photo of the same real property.",
   },
   "night-luxury": {
     label: "Night Luxury",
     prompt:
-      "luxury property at night, dramatic architectural lighting, illuminated pool and landscape, deep blue sky, interior warm glow through windows, high-end hospitality photography style, 8k quality",
+      "Enhance this real property photo into a luxury night photography image. " +
+      "Keep the exact same house and architecture — do NOT change the building structure. " +
+      "Add dramatic architectural lighting to the facade, illuminate landscape features and pathways. " +
+      "Add warm interior glow through windows, deep blue night sky. Remove all vehicles. " +
+      "The result must be the same real property, photographed at night with luxury real estate lighting.",
   },
   "bright-clean": {
     label: "Bright & Clean",
     prompt:
-      "bright overcast daylight, perfectly balanced exposure, no harsh shadows, clean whites, vivid greenery, fresh and airy feel, real estate photography optimized for MLS listings, sharp throughout",
+      "Enhance this real property photo to look clean, bright, and professional for a luxury real estate brochure. " +
+      "Keep the exact same house and architecture — do NOT change the building. " +
+      "Perfect balanced daylight exposure, no harsh shadows, clean whites, vivid green lawn. " +
+      "Remove all vehicles from the driveway, remove utility lines and street signs. " +
+      "The result should look like the same property on a perfect sunny day, ready for a magazine listing.",
   },
 };
 
 export type StyleKey = keyof typeof STYLE_CONFIGS;
 
 /**
- * Builds the full image generation prompt from address + style.
- * The prompt is modular — the style block slots in cleanly.
+ * Builds the image edit prompt.
+ * Always anchors to the real property — enhance, never replace.
  */
 export function buildPrompt(address: string, style: StyleKey): string {
   const styleConfig = STYLE_CONFIGS[style] ?? STYLE_CONFIGS["aerial"];
 
   return (
-    `Create a high-resolution photorealistic image of a luxury residential property located at ${address}. ` +
-    `Style: ${styleConfig.prompt}. ` +
-    `Remove any location pins, address overlays, text, watermarks, and vehicles in the driveway. ` +
-    `Enhance clarity, contrast, and color accuracy for luxury real estate marketing. ` +
-    `The result must look like a professional architectural photograph taken on a premium camera. ` +
-    `Do NOT include any street signs, house numbers, or identifying text in the image. ` +
-    `8K resolution quality, highly detailed, magazine cover quality, sharp focus, realistic textures, photorealistic.`
+    `${styleConfig.prompt} ` +
+    `This is the real property at ${address}. ` +
+    `The architectural structure must remain identical to the original photo. ` +
+    `Photorealistic, 8K quality, sharp focus, magazine cover ready.`
   );
 }
