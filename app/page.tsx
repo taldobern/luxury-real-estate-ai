@@ -80,17 +80,58 @@ function AnglePicker({
   selected: number;
   onSelect: (heading: number) => void;
 }) {
+  const satelliteAngle = angles.find(a => a.source === "satellite");
+  const streetAngles = angles.filter(a => a.source === "streetview");
+
   return (
     <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
       <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>
         Select Property View
       </p>
       <p className="text-xs mb-4" style={{ color: "#bbb8b0" }}>
-        Pick the angle that shows the front of the house
+        Aerial for drone shot · or pick a street angle
       </p>
-      {/* Street view angles */}
-      <div className="grid grid-cols-2 gap-2 mb-2">
-        {angles.filter(a => a.source === "streetview").map((angle) => {
+
+      {/* Aerial tile — always at top, full width */}
+      {satelliteAngle && (() => {
+        const isSelected = satelliteAngle.heading === selected;
+        return (
+          <button
+            onClick={() => onSelect(satelliteAngle.heading)}
+            className="relative w-full rounded-xl overflow-hidden transition-all duration-200 mb-2"
+            style={{
+              border: isSelected ? "2px solid #b8902a" : "2px solid #e4ddd0",
+              boxShadow: isSelected ? "0 0 20px rgba(184,144,42,0.35)" : "none",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={satelliteAngle.imageBase64} alt="Aerial View" className="w-full object-cover" style={{ aspectRatio: "16/7" }} />
+            <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] tracking-widest uppercase font-bold"
+              style={{ background: "rgba(0,0,0,0.65)", color: "#d4a843", backdropFilter: "blur(4px)" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="3" cy="3" r="2"/><circle cx="21" cy="3" r="2"/><circle cx="3" cy="21" r="2"/><circle cx="21" cy="21" r="2"/>
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 3l4 5M21 3l-4 5M3 21l4-5M21 21l-4-5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+              </svg>
+              Aerial / Drone
+            </div>
+            <div
+              className="absolute bottom-0 inset-x-0 py-2 text-center text-[10px] tracking-widest uppercase"
+              style={{
+                background: isSelected ? "rgba(184,144,42,0.92)" : "rgba(0,0,0,0.55)",
+                color: "#fff",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              {isSelected ? "✓ Aerial Selected — Drone Transformation" : "Tap to select aerial drone view"}
+            </div>
+          </button>
+        );
+      })()}
+
+      {/* Street view 2×2 grid */}
+      <div className="grid grid-cols-2 gap-2">
+        {streetAngles.map((angle) => {
           const isSelected = angle.heading === selected;
           return (
             <button
@@ -118,43 +159,6 @@ function AnglePicker({
           );
         })}
       </div>
-
-      {/* Aerial / Satellite option — full width */}
-      {angles.filter(a => a.source === "satellite").map((angle) => {
-        const isSelected = angle.heading === selected;
-        return (
-          <button
-            key="satellite"
-            onClick={() => onSelect(angle.heading)}
-            className="relative w-full rounded-xl overflow-hidden transition-all duration-200"
-            style={{
-              border: isSelected ? "2px solid #b8902a" : "2px solid #e4ddd0",
-              boxShadow: isSelected ? "0 0 20px rgba(184,144,42,0.3)" : "none",
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={angle.imageBase64} alt="Aerial View" className="w-full object-cover" style={{ aspectRatio: "2/1" }} />
-            {/* Drone badge */}
-            <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] tracking-widest uppercase font-semibold"
-              style={{ background: "rgba(0,0,0,0.6)", color: "#d4a843", backdropFilter: "blur(4px)" }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-              Drone
-            </div>
-            <div
-              className="absolute bottom-0 inset-x-0 py-2 text-center text-[10px] tracking-widest uppercase"
-              style={{
-                background: isSelected ? "rgba(184,144,42,0.9)" : "rgba(0,0,0,0.55)",
-                color: isSelected ? "#fff" : "#ccc",
-                backdropFilter: "blur(4px)",
-              }}
-            >
-              Aerial View — Select for Drone Shot
-            </div>
-          </button>
-        );
-      })}
     </div>
   );
 }
@@ -275,7 +279,8 @@ export default function Home() {
       const data: StreetViewResponse & { error?: string } = await res.json();
       if (!res.ok || data.error) { setError(data.error ?? "Could not load Street View."); setStep("input"); return; }
       setAngles(data.angles);
-      setSelectedHeading(0);
+      // Auto-select aerial (-1) when Aerial/Drone style is chosen, otherwise default to North (0)
+      setSelectedHeading(style === "aerial" ? -1 : 0);
     } catch {
       setError("Network error. Please check your connection.");
       setStep("input");
