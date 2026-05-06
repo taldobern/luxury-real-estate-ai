@@ -83,13 +83,16 @@ export function buildPrompt(address: string, style: StyleKey): string {
  */
 export function buildAerialDronePrompt(address: string): string {
   return (
-    `Transform this satellite overhead image of a residential property into a photorealistic professional real estate drone photograph. ` +
-    `Render the scene as if captured by a drone at approximately 150 feet altitude, camera angled at 45 degrees looking down toward the property — exactly like luxury real estate aerial brochure photography. ` +
-    `Keep the exact same house footprint, roof shape, lot boundaries, driveway layout, and surrounding structures — do NOT alter or replace any buildings. ` +
-    `Enhance the landscaping: lush vivid green lawn, full tree canopy, manicured hedges, clean pathways. ` +
-    `Natural mid-morning sunlight, soft realistic shadows cast at an angle, vivid blue sky visible at the horizon edges, rich color depth. ` +
-    `Remove all vehicles, debris, and visual clutter. ` +
-    `This is the real property at ${address}. ` +
-    `The result must look indistinguishable from a real drone photograph used in a luxury real estate magazine or brochure — photorealistic, 8K quality, sharp detail.`
+    `Create a high-resolution photorealistic luxury real estate drone image at twilight from a slightly elevated bird's-eye perspective (approximately 30–80 feet above the property). ` +
+    `Capture the home with warm interior and exterior lighting glowing naturally during blue hour sunset. ` +
+    `Enhance the sky with rich twilight tones of blue, purple, pink, and soft orange while maintaining realistic color grading. ` +
+    `The image should feel cinematic, ultra-sharp, and professionally shot for luxury real estate marketing. ` +
+    `Preserve accurate architectural proportions and realistic textures. ` +
+    `Brighten shadows naturally without overexposing highlights. ` +
+    `Increase clarity, contrast, and depth while keeping the image realistic and elegant. ` +
+    `Showcase the surrounding landscape, mountains, city skyline, golf course, lake, pool, or neighborhood depending on the property location. ` +
+    `Add subtle luxury ambiance with landscape lighting, glowing pool water, and soft environmental reflections. ` +
+    `Style: luxury architectural photography, magazine-quality, ultra-detailed, HDR, professional drone photography, twilight luxury real estate marketing. ` +
+    `This is the real property at ${address}.`
   );
 }

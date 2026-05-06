@@ -596,18 +596,6 @@ export default function Home() {
                     <RefreshIcon />Try Different Angle
                   </button>
 
-                  <button onClick={() => setShowPrompt((p) => !p)}
-                    className="mt-2 w-full text-[10px] tracking-widest uppercase text-center py-2 rounded-lg"
-                    style={{ color: "#bbb8b0", border: "1px dashed #e4ddd0" }}>
-                    {showPrompt ? "Hide Prompt" : "View Prompt"}
-                  </button>
-
-                  {showPrompt && (
-                    <div className="mt-3 p-3 rounded-lg text-[11px] leading-relaxed"
-                      style={{ background: "#f7f4ef", color: "#888880", border: "1px solid #e4ddd0" }}>
-                      {lastPrompt}
-                    </div>
-                  )}
                 </div>
 
                 {history.length > 1 && (
