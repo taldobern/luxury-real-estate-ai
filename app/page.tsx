@@ -184,13 +184,23 @@ export default function Home() {
   const [step, setStep] = useState<Step>("input");
   const [error, setError] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserEmail(user.email ?? null);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setUserEmail(session.user.email ?? null);
+        setAuthToken(session.access_token);
+      }
     });
+    // Keep token fresh on session changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthToken(session?.access_token ?? null);
+      setUserEmail(session?.user.email ?? null);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   async function handleSignOut() {
@@ -221,7 +231,7 @@ export default function Home() {
     try {
       const res = await fetch("/api/streetview", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
         body: JSON.stringify({ address: address.trim() }),
       });
       const data: StreetViewResponse & { error?: string } = await res.json();
@@ -242,7 +252,7 @@ export default function Home() {
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
         body: JSON.stringify({ address: address.trim(), style, heading }),
       });
       const data: GenerateResponse & { error?: string } = await res.json();

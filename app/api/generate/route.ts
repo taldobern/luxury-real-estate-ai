@@ -30,16 +30,20 @@ async function fetchStreetView(address: string, heading = 0): Promise<Buffer> {
 
 export async function POST(req: NextRequest) {
   try {
-    // --- Auth check ---
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // --- Auth check via Bearer token ---
+    const admin = createAdminClient();
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
 
-    if (!user) {
+    if (!token) {
       return NextResponse.json({ error: "Please sign in to generate images." }, { status: 401 });
     }
 
-    // --- Usage limit check ---
-    const admin = createAdminClient();
+    const { data: { user }, error: authError } = await admin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Please sign in to generate images." }, { status: 401 });
+    }
     const { data: profile } = await admin
       .from("profiles")
       .select("images_used, images_limit, trial_ends_at, plan")
