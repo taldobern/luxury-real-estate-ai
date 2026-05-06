@@ -322,7 +322,7 @@ export default function Home() {
   }
 
   const styleKeys = Object.keys(STYLE_CONFIGS) as StyleKey[];
-  const isLoading = step === "picking-angle" && angles.length === 0;
+  const isLoading = step === "picking-angle" && angles.length === 0 && style !== "aerial";
 
   return (
     <main className="min-h-screen" style={{ background: "#f7f4ef" }}>
@@ -450,7 +450,7 @@ export default function Home() {
         </div>
 
         {/* ── Angle picker ── */}
-        {step === "picking-angle" && angles.length > 0 && (
+        {step === "picking-angle" && (style === "aerial" || angles.length > 0) && (
           <div className="grid md:grid-cols-3 gap-5 mb-6">
             <div className="md:col-span-2">
               {style === "aerial" ? (
