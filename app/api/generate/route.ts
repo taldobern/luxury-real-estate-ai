@@ -79,12 +79,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid style selected." }, { status: 400 });
     }
 
-    // --- Fetch source image (Street View or Satellite) ---
-    let sourceBuffer: Buffer;
-    let prompt: string;
+    // --- Fetch source images ---
+    let streetViewBuffer: Buffer;
+    try {
+      streetViewBuffer = await fetchStreetView(address.trim(), heading);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not fetch Street View image.";
+      return NextResponse.json({ error: message }, { status: 422 });
+    }
 
-    if (heading === -1) {
-      // Satellite aerial view
+    const originalBase64 = `data:image/jpeg;base64,${streetViewBuffer.toString("base64")}`;
+
+    // --- Build prompt and image list ---
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    let prompt: string;
+    let imageInput: Awaited<ReturnType<typeof toFile>> | Awaited<ReturnType<typeof toFile>>[];
+
+    if (style === "aerial") {
+      // Aerial/Drone: use street view + satellite together
+      let satelliteBuffer: Buffer;
       try {
         const encoded = encodeURIComponent(address.trim());
         const key = process.env.GOOGLE_MAPS_API_KEY;
@@ -93,32 +106,26 @@ export async function POST(req: NextRequest) {
           `?center=${encoded}&zoom=19&size=1024x1024&maptype=satellite&key=${key}`;
         const res = await fetch(satUrl);
         if (!res.ok) throw new Error("Could not fetch satellite image.");
-        sourceBuffer = Buffer.from(await res.arrayBuffer());
+        satelliteBuffer = Buffer.from(await res.arrayBuffer());
       } catch (err) {
         const message = err instanceof Error ? err.message : "Could not fetch satellite image.";
         return NextResponse.json({ error: message }, { status: 422 });
       }
       prompt = buildAerialDronePrompt(address.trim());
+      imageInput = [
+        await toFile(streetViewBuffer, "street.jpg", { type: "image/jpeg" }),
+        await toFile(satelliteBuffer, "satellite.jpg", { type: "image/jpeg" }),
+      ];
     } else {
-      // Street View
-      try {
-        sourceBuffer = await fetchStreetView(address.trim(), heading);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Could not fetch Street View image.";
-        return NextResponse.json({ error: message }, { status: 422 });
-      }
+      // All other styles: street view only
       prompt = buildPrompt(address.trim(), style);
+      imageInput = await toFile(streetViewBuffer, "property.jpg", { type: "image/jpeg" });
     }
 
-    const originalBase64 = `data:image/jpeg;base64,${sourceBuffer.toString("base64")}`;
-
     // --- OpenAI image edit ---
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const imageFile = await toFile(sourceBuffer, "property.jpg", { type: "image/jpeg" });
-
     const response = await openai.images.edit({
       model: "gpt-image-1",
-      image: imageFile,
+      image: imageInput,
       prompt,
       n: 1,
       size: "1024x1024",

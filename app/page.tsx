@@ -82,40 +82,18 @@ function AnglePicker({
   onSelect: (heading: number) => void;
   isAerial: boolean;
 }) {
-  const satelliteAngle = angles.find(a => a.source === "satellite");
-  const streetAngles = angles.filter(a => a.source === "streetview");
-
-  if (isAerial) {
-    // Aerial/Drone style — show only the satellite tile, no choice needed
-    return (
-      <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
-        <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Aerial View</p>
-        <p className="text-xs mb-4" style={{ color: "#bbb8b0" }}>Satellite image — will be transformed into a luxury drone shot</p>
-        {satelliteAngle && (
-          <div className="relative w-full rounded-xl overflow-hidden" style={{ border: "2px solid #b8902a", boxShadow: "0 0 20px rgba(184,144,42,0.25)" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={satelliteAngle.imageBase64} alt="Aerial View" className="w-full object-cover" style={{ aspectRatio: "1/1" }} />
-            <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] tracking-widest uppercase font-bold"
-              style={{ background: "rgba(0,0,0,0.65)", color: "#d4a843", backdropFilter: "blur(4px)" }}>
-              Aerial / Drone
-            </div>
-            <div className="absolute bottom-0 inset-x-0 py-2 text-center text-[10px] tracking-widest uppercase"
-              style={{ background: "rgba(184,144,42,0.92)", color: "#fff", backdropFilter: "blur(4px)" }}>
-              ✓ Ready — AI will transform to drone view
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Street-level style — show 4 compass angles
   return (
     <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
-      <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Select Property View</p>
-      <p className="text-xs mb-4" style={{ color: "#bbb8b0" }}>Pick the angle that shows the front of the house</p>
+      <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>
+        Select Property View
+      </p>
+      <p className="text-xs mb-4" style={{ color: "#bbb8b0" }}>
+        {isAerial
+          ? "Pick the angle closest to the front — satellite + this view will be combined"
+          : "Pick the angle that shows the front of the house"}
+      </p>
       <div className="grid grid-cols-2 gap-2">
-        {streetAngles.map((angle) => {
+        {angles.map((angle) => {
           const isSelected = angle.heading === selected;
           return (
             <button
@@ -263,8 +241,7 @@ export default function Home() {
       const data: StreetViewResponse & { error?: string } = await res.json();
       if (!res.ok || data.error) { setError(data.error ?? "Could not load Street View."); setStep("input"); return; }
       setAngles(data.angles);
-      // Auto-select aerial (-1) when Aerial/Drone style is chosen, otherwise default to North (0)
-      setSelectedHeading(style === "aerial" ? -1 : 0);
+      setSelectedHeading(0);
     } catch {
       setError("Network error. Please check your connection.");
       setStep("input");
