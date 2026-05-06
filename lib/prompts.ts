@@ -83,8 +83,10 @@ export function buildPrompt(address: string, style: StyleKey): string {
  */
 export function buildAerialDronePrompt(address: string): string {
   return (
-    `Create a high-resolution photorealistic luxury real estate drone image at twilight from a slightly elevated bird's-eye perspective (approximately 30–80 feet above the property). ` +
-    `Capture the home with warm interior and exterior lighting glowing naturally during blue hour sunset. ` +
+    `Transform this aerial photograph of a real property into a high-resolution photorealistic luxury real estate drone image at twilight. ` +
+    `Preserve the exact same aerial perspective, camera angle, house footprint, roof shape, tennis court, pool, driveway, trees, and all existing structures — do NOT move, replace, or remove any buildings or features. ` +
+    `Keep the bird's-eye perspective (approximately 30–80 feet above the property) identical to the source image. ` +
+    `Add warm interior and exterior lighting glowing naturally during blue hour sunset. ` +
     `Enhance the sky with rich twilight tones of blue, purple, pink, and soft orange while maintaining realistic color grading. ` +
     `The image should feel cinematic, ultra-sharp, and professionally shot for luxury real estate marketing. ` +
     `Preserve accurate architectural proportions and realistic textures. ` +
