@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI, { toFile } from "openai";
-import Replicate from "replicate";
 import { buildPrompt, buildAerialDronePrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
@@ -89,38 +88,30 @@ export async function POST(req: NextRequest) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     if (style === "aerial" && uploadedImageBase64) {
-      // Aerial/Drone: Replicate FLUX — max fidelity to source
+      // Aerial/Drone: OpenAI gpt-image-1 with uploaded Google Earth screenshot
       originalBase64 = uploadedImageBase64;
       prompt = buildAerialDronePrompt(address.trim());
-
-      const replicate = new Replicate({ auth: process.env.REPLICATE_API_KEY });
-      const output = await replicate.run("black-forest-labs/flux-2-pro" as `${string}/${string}`, {
-        input: {
-          prompt,
-          image: uploadedImageBase64,
-          prompt_strength: 0.15,
-          num_inference_steps: 28,
-          guidance: 2.5,
-          output_format: "png",
-          output_quality: 100,
-        },
+      const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
+      const uploadedBuffer = Buffer.from(base64Data, "base64");
+      const imageFile = await toFile(uploadedBuffer, "aerial.jpg", { type: "image/jpeg" });
+      const response = await openai.images.edit({
+        model: "gpt-image-1",
+        image: imageFile,
+        prompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "high",
       });
-
-      let imageUrl: string;
-      if (typeof output === "string") {
-        imageUrl = output;
-      } else if (Array.isArray(output) && typeof output[0] === "string") {
-        imageUrl = output[0] as string;
-      } else if (output && typeof (output as { url?: () => string }).url === "function") {
-        imageUrl = (output as { url: () => string }).url();
+      const imageData = response.data?.[0];
+      if (!imageData) return NextResponse.json({ error: "No image returned by OpenAI." }, { status: 500 });
+      if (imageData.b64_json) {
+        imageBuffer = Buffer.from(imageData.b64_json, "base64");
+      } else if (imageData.url) {
+        const imgRes = await fetch(imageData.url);
+        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
       } else {
-        return NextResponse.json({ error: "Unexpected response from Replicate." }, { status: 500 });
+        return NextResponse.json({ error: "Unexpected API response format." }, { status: 500 });
       }
-
-      const imgRes = await fetch(imageUrl);
-      if (!imgRes.ok) throw new Error("Failed to download image from Replicate.");
-      imageBuffer = Buffer.from(await imgRes.arrayBuffer());
-
     } else {
       // All other styles: Street View + OpenAI gpt-image-1
       let streetViewBuffer: Buffer;
