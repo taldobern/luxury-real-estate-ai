@@ -405,7 +405,7 @@ export default function Home() {
                 Visual Style
               </label>
               <div className="relative">
-                <select value={style} onChange={(e) => setStyle(e.target.value as StyleKey)}
+                <select value={style} onChange={(e) => { setStyle(e.target.value as StyleKey); if (step !== "input") handleReset(); }}
                   className="w-full appearance-none px-5 py-3.5 rounded-xl text-sm cursor-pointer"
                   style={{ background: "#f7f4ef", border: "1px solid #ddd8ce", color: "#1a1a1a" }}>
                   {styleKeys.map((key) => (
