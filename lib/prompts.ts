@@ -86,6 +86,8 @@ export function buildAerialDronePrompt(address: string): string {
     `This is a Google Earth 3D screenshot of a real property. Enhance it into a professional luxury real estate aerial photo. ` +
     `CRITICAL: Do NOT add, remove, or move any structures, features, or elements. Do NOT invent mountains, pools, courts, trees, or any objects that are not already visible in the image. ` +
     `Preserve the exact same aerial perspective, camera angle, house footprint, roof, driveway, lawn, trees, and every existing feature with 100% positional accuracy. ` +
+    `Keep all original colors faithful — if the house is white, keep it white; if the roof is brown, keep it brown; if the court is green, keep it green. Do NOT recolor any structures. ` +
+    `Remove all parked cars and vehicles from driveways and streets. Remove any address numbers, labels, pins, or text overlaid by Google Earth. ` +
     `Only enhance: improve rendering quality from Google Earth style to photorealistic, add natural warm twilight lighting to what already exists, enrich colors and contrast, sharpen textures, add soft blue hour sky tone to the existing sky area only. ` +
     `Treat this as a photo retouching job — enhance what is there, change nothing structurally. ` +
     `This is the real property at ${address}. Result must look like a professional drone photo of this exact property.`
