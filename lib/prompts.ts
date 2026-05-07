@@ -83,18 +83,11 @@ export function buildPrompt(address: string, style: StyleKey): string {
  */
 export function buildAerialDronePrompt(address: string): string {
   return (
-    `Transform this aerial photograph of a real property into a high-resolution photorealistic luxury real estate drone image at twilight. ` +
-    `Preserve the exact same aerial perspective, camera angle, house footprint, roof shape, tennis court, pool, driveway, trees, and all existing structures — do NOT move, replace, or remove any buildings or features. ` +
-    `Keep the bird's-eye perspective (approximately 30–80 feet above the property) identical to the source image. ` +
-    `Add warm interior and exterior lighting glowing naturally during blue hour sunset. ` +
-    `Enhance the sky with rich twilight tones of blue, purple, pink, and soft orange while maintaining realistic color grading. ` +
-    `The image should feel cinematic, ultra-sharp, and professionally shot for luxury real estate marketing. ` +
-    `Preserve accurate architectural proportions and realistic textures. ` +
-    `Brighten shadows naturally without overexposing highlights. ` +
-    `Increase clarity, contrast, and depth while keeping the image realistic and elegant. ` +
-    `Showcase the surrounding landscape, mountains, city skyline, golf course, lake, pool, or neighborhood depending on the property location. ` +
-    `Add subtle luxury ambiance with landscape lighting, glowing pool water, and soft environmental reflections. ` +
-    `Style: luxury architectural photography, magazine-quality, ultra-detailed, HDR, professional drone photography, twilight luxury real estate marketing. ` +
-    `This is the real property at ${address}.`
+    `This is a Google Earth 3D screenshot of a real property. Enhance it into a professional luxury real estate aerial photo. ` +
+    `CRITICAL: Do NOT add, remove, or move any structures, features, or elements. Do NOT invent mountains, pools, courts, trees, or any objects that are not already visible in the image. ` +
+    `Preserve the exact same aerial perspective, camera angle, house footprint, roof, driveway, lawn, trees, and every existing feature with 100% positional accuracy. ` +
+    `Only enhance: improve rendering quality from Google Earth style to photorealistic, add natural warm twilight lighting to what already exists, enrich colors and contrast, sharpen textures, add soft blue hour sky tone to the existing sky area only. ` +
+    `Treat this as a photo retouching job — enhance what is there, change nothing structurally. ` +
+    `This is the real property at ${address}. Result must look like a professional drone photo of this exact property.`
   );
 }

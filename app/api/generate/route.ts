@@ -4,8 +4,6 @@ import Replicate from "replicate";
 import { buildPrompt, buildAerialDronePrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
-const FLUX_MODEL = "black-forest-labs/flux-2-pro" as const;
-
 export interface GenerateRequest {
   address: string;
   style: StyleKey;
@@ -88,25 +86,26 @@ export async function POST(req: NextRequest) {
     let originalBase64: string;
     let imageBuffer: Buffer;
 
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
     if (style === "aerial" && uploadedImageBase64) {
-      // Aerial/Drone: use uploaded Google Earth screenshot + FLUX on Replicate
+      // Aerial/Drone: Replicate FLUX — max fidelity to source
       originalBase64 = uploadedImageBase64;
       prompt = buildAerialDronePrompt(address.trim());
 
       const replicate = new Replicate({ auth: process.env.REPLICATE_API_KEY });
-      const output = await replicate.run(FLUX_MODEL, {
+      const output = await replicate.run("black-forest-labs/flux-2-pro" as `${string}/${string}`, {
         input: {
           prompt,
           image: uploadedImageBase64,
-          prompt_strength: 0.35,
+          prompt_strength: 0.15,
           num_inference_steps: 28,
-          guidance: 3,
+          guidance: 2.5,
           output_format: "png",
           output_quality: 100,
         },
       });
 
-      // Replicate returns a URL or ReadableStream
       let imageUrl: string;
       if (typeof output === "string") {
         imageUrl = output;
@@ -133,8 +132,6 @@ export async function POST(req: NextRequest) {
       }
       originalBase64 = `data:image/jpeg;base64,${streetViewBuffer.toString("base64")}`;
       prompt = buildPrompt(address.trim(), style);
-
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       const imageFile = await toFile(streetViewBuffer, "property.jpg", { type: "image/jpeg" });
       const response = await openai.images.edit({
         model: "gpt-image-1",
@@ -144,10 +141,8 @@ export async function POST(req: NextRequest) {
         size: "1024x1024",
         quality: "high",
       });
-
       const imageData = response.data?.[0];
       if (!imageData) return NextResponse.json({ error: "No image returned by OpenAI." }, { status: 500 });
-
       if (imageData.b64_json) {
         imageBuffer = Buffer.from(imageData.b64_json, "base64");
       } else if (imageData.url) {
