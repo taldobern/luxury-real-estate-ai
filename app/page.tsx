@@ -449,6 +449,16 @@ export default function Home() {
           )}
         </div>
 
+        {/* ── Loading street view ── */}
+        {step === "picking-angle" && style !== "aerial" && angles.length === 0 && (
+          <div className="rounded-2xl p-6 mb-6 bg-white flex items-center gap-4" style={{ border: "1px solid #e4ddd0" }}>
+            <div className="w-8 h-8 rounded-full border-2 border-transparent flex-shrink-0"
+              style={{ borderTopColor: "#b8902a", borderRightColor: "#b8902a40", animation: "spin 1s linear infinite" }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <p className="text-sm font-light" style={{ color: "#888880" }}>Loading Street View angles…</p>
+          </div>
+        )}
+
         {/* ── Angle picker ── */}
         {step === "picking-angle" && (style === "aerial" || angles.length > 0) && (
           <div className="grid md:grid-cols-3 gap-5 mb-6">
