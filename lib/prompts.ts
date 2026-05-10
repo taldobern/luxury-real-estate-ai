@@ -83,13 +83,11 @@ export function buildPrompt(address: string, style: StyleKey): string {
  */
 export function buildAerialDronePrompt(address: string): string {
   return (
-    `This is a Google Earth 3D screenshot of a real property. Enhance it into a professional luxury real estate aerial photo. ` +
-    `CRITICAL: Do NOT add, remove, or move any structures, features, or elements. Do NOT invent mountains, pools, courts, trees, or any objects that are not already visible in the image. ` +
-    `Preserve the exact same aerial perspective, camera angle, house footprint, roof, driveway, lawn, trees, and every existing feature with 100% positional accuracy. ` +
-    `Keep all original colors faithful — if the house is white, keep it white; if the roof is brown, keep it brown; if the court is green, keep it green. Do NOT recolor any structures. ` +
-    `Remove all parked cars and vehicles from driveways and streets. Remove any address numbers, labels, pins, or text overlaid by Google Earth. ` +
-    `Only enhance: improve rendering quality from Google Earth style to photorealistic, add natural warm twilight lighting to what already exists, enrich colors and contrast, sharpen textures, add soft blue hour sky tone to the existing sky area only. ` +
-    `Treat this as a photo retouching job — enhance what is there, change nothing structurally. ` +
-    `This is the real property at ${address}. Result must look like a professional drone photo of this exact property.`
+    `Create a high-resolution photorealistic aerial image from a slightly elevated bird's-eye perspective (drone-style, approx. 20–30 feet above ground), maintaining accurate architectural proportions. ` +
+    `Brighten the overall image with natural daylight, remove harsh shadows, and balance exposure while preserving realistic textures and materials. ` +
+    `Enhance clarity, contrast, and color accuracy for luxury real estate marketing. ` +
+    `The result should look like a professional architectural drone photograph taken on a bright, clear day. ` +
+    `Please remove any cars from driveway and the google location mark and address. ` +
+    `This is the real property at ${address}.`
   );
 }
