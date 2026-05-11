@@ -82,17 +82,15 @@ export function buildPrompt(address: string, style: StyleKey): string {
  * Transforms a flat top-down satellite image into a luxury drone photo.
  */
 export function buildAerialDronePrompt(address: string): string {
+  void address; // reserved for future use
   return (
-    `Create a high-resolution photorealistic aerial image from a slightly elevated bird's-eye perspective ` +
-    `(drone-style, approx. 20–30 feet above ground), maintaining accurate architectural proportions. ` +
-    `Brighten the overall image with natural daylight, remove harsh shadows, and balance exposure while ` +
-    `preserving realistic textures and materials. Enhance clarity, contrast, and color accuracy for luxury ` +
-    `real estate marketing. The result should look like a professional architectural drone photograph taken ` +
-    `on a bright, clear day. ` +
-    `Please remove any cars from driveway and the google location mark and address. ` +
-    `CRITICAL: Do not change, add, or remove any architectural structures. ` +
-    `Keep the exact same roof lines, number of garage doors, windows, columns, solar panels, ` +
-    `and every building element exactly as shown in the original image. ` +
-    `This is the real property at ${address}.`
+    `Retouch this aerial photograph for luxury real estate marketing. ` +
+    `DO NOT alter, move, add, or remove any architectural structures — the building must remain pixel-perfect identical to the original. ` +
+    `Only adjust: lighting (natural daylight, balanced exposure), color grading (vivid sky, greener grass), ` +
+    `shadow removal, clarity, contrast, and sharpness. ` +
+    `Remove cars from the driveway, remove any map markers or overlaid text. ` +
+    `The result must look like the exact same photograph retouched by a professional photo editor — ` +
+    `not a new image, not a rendering. Every roof line, window, garage door, column, solar panel, ` +
+    `and structural detail must be identical to the original photo.`
   );
 }
