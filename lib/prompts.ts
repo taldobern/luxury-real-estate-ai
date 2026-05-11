@@ -83,12 +83,14 @@ export function buildPrompt(address: string, style: StyleKey): string {
  */
 export function buildAerialDronePrompt(address: string): string {
   return (
-    `Create a high-resolution photorealistic aerial image from a slightly elevated bird's-eye perspective ` +
-    `(drone-style, approx. 20–30 feet above ground), maintaining accurate architectural proportions. ` +
-    `Brighten the overall image with natural daylight, remove harsh shadows, and balance exposure while ` +
-    `preserving realistic textures and materials. Enhance clarity, contrast, and color accuracy for luxury ` +
-    `real estate marketing. The result should look like a professional architectural drone photograph taken ` +
-    `on a bright, clear day. Please remove any cars from driveway and the google location mark and address. ` +
-    `This is the real property at ${address}.`
+    `This image contains TWO views of the exact same property at ${address}. ` +
+    `TOP HALF: aerial Google Earth screenshot showing the roof layout, footprint, driveway, and surrounding area from above. ` +
+    `BOTTOM HALF: street-level photo showing the front facade with exact architectural details — garage doors, entry arch, columns, windows, and exterior finish. ` +
+    `Using BOTH halves as reference, generate a single professional high-resolution aerial drone photograph of this exact property. ` +
+    `Preserve the exact roof structure and property layout from the top half. ` +
+    `Use the bottom half to correctly render architectural details that are difficult to see from above — especially the garage, entry roof, columns, and wall colors. ` +
+    `Brighten with natural daylight, remove harsh shadows, enhance colors for luxury real estate marketing. ` +
+    `Remove all cars from the driveway. Remove any Google Earth pins, address labels, or overlay text. ` +
+    `Output: a single aerial drone photo of this property only — no split image, no street view in the output.`
   );
 }

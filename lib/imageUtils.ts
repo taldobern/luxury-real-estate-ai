@@ -1,6 +1,30 @@
 import sharp from "sharp";
 
 /**
+ * Stitches aerial screenshot (top) and street view (bottom) into a single
+ * 1024x1024 image. Gives gpt-image-1 both perspectives of the same property.
+ */
+export async function stitchAerialAndStreetView(
+  aerialBuffer: Buffer,
+  streetViewBuffer: Buffer
+): Promise<Buffer> {
+  const [aerial, street] = await Promise.all([
+    sharp(aerialBuffer).resize(1024, 512, { fit: "cover", position: "center" }).png().toBuffer(),
+    sharp(streetViewBuffer).resize(1024, 512, { fit: "cover", position: "center" }).png().toBuffer(),
+  ]);
+
+  return sharp({
+    create: { width: 1024, height: 1024, channels: 3, background: { r: 10, g: 10, b: 10 } },
+  })
+    .composite([
+      { input: aerial, left: 0, top: 0 },
+      { input: street, left: 0, top: 512 },
+    ])
+    .png()
+    .toBuffer();
+}
+
+/**
  * Enhances an aerial image using Sharp (pure photo processing, no AI).
  * Resizes to 1024x1024, boosts brightness, contrast, saturation and sharpness.
  * Safe: zero risk of structural changes.

@@ -237,18 +237,11 @@ export default function Home() {
     reader.readAsDataURL(file);
   }
 
-  // Step 1 — for aerial: go straight to picking-angle (no Street View fetch needed)
-  //           for others: fetch 4 Street View angles
+  // Step 1 — fetch 4 Street View angles for ALL styles including aerial
   async function handleFetchAngles() {
     if (!address.trim()) { setError("Please enter a property address."); return; }
     setError(null);
     setAerialUpload(null);
-
-    if (style === "aerial") {
-      setStep("picking-angle");
-      return;
-    }
-
     setStep("picking-angle");
     try {
       const res = await fetch("/api/streetview", {
@@ -322,7 +315,7 @@ export default function Home() {
   }
 
   const styleKeys = Object.keys(STYLE_CONFIGS) as StyleKey[];
-  const isLoading = step === "picking-angle" && angles.length === 0 && style !== "aerial";
+  const isLoading = step === "picking-angle" && angles.length === 0;
 
   return (
     <main className="min-h-screen" style={{ background: "#f7f4ef" }}>
@@ -450,7 +443,7 @@ export default function Home() {
         </div>
 
         {/* ── Loading street view ── */}
-        {step === "picking-angle" && style !== "aerial" && angles.length === 0 && (
+        {step === "picking-angle" && angles.length === 0 && (
           <div className="rounded-2xl p-6 mb-6 bg-white flex items-center gap-4" style={{ border: "1px solid #e4ddd0" }}>
             <div className="w-8 h-8 rounded-full border-2 border-transparent flex-shrink-0"
               style={{ borderTopColor: "#b8902a", borderRightColor: "#b8902a40", animation: "spin 1s linear infinite" }} />
@@ -460,58 +453,87 @@ export default function Home() {
         )}
 
         {/* ── Angle picker ── */}
-        {step === "picking-angle" && (style === "aerial" || angles.length > 0) && (
+        {step === "picking-angle" && angles.length > 0 && (
           <div className="grid md:grid-cols-3 gap-5 mb-6">
             <div className="md:col-span-2">
               {style === "aerial" ? (
-                /* ── Aerial: Google Earth upload panel ── */
-                <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
-                  <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Aerial / Drone View</p>
-                  <p className="text-xs mb-5" style={{ color: "#bbb8b0" }}>
-                    Open Google Earth, find the 3D view of the property, screenshot it, then upload below.
-                  </p>
-
-                  {/* Google Earth link */}
-                  <a
-                    href={`https://earth.google.com/web/search/${address.trim().replace(/\s+/g, "+")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-xs tracking-widest uppercase font-medium mb-4 transition-all"
-                    style={{ background: "#f0ece4", border: "1px solid #e4ddd0", color: "#b8902a" }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
-                    </svg>
-                    Open in Google Earth →
-                  </a>
-
-                  {/* Upload area */}
-                  <label className="flex flex-col items-center justify-center w-full rounded-xl cursor-pointer transition-all"
-                    style={{
-                      border: aerialUpload ? "2px solid #b8902a" : "2px dashed #e4ddd0",
-                      background: aerialUpload ? "#fff" : "#faf8f5",
-                      minHeight: "180px",
-                    }}>
-                    {aerialUpload ? (
-                      <div className="relative w-full">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={aerialUpload} alt="Uploaded Google Earth screenshot" className="w-full rounded-xl object-cover" style={{ maxHeight: "260px" }} />
-                        <div className="absolute top-2 right-2 px-2 py-1 rounded-lg text-[10px] tracking-widest uppercase font-bold"
-                          style={{ background: "rgba(184,144,42,0.9)", color: "#fff" }}>
-                          ✓ Ready
+                /* ── Aerial: Google Earth upload + street view angle picker ── */
+                <div className="space-y-4">
+                  <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+                    <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Step 1 — Aerial Screenshot</p>
+                    <p className="text-xs mb-4" style={{ color: "#bbb8b0" }}>
+                      Open Google Earth, find the 3D view, screenshot it, upload below.
+                    </p>
+                    <a
+                      href={`https://earth.google.com/web/search/${address.trim().replace(/\s+/g, "+")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-xs tracking-widest uppercase font-medium mb-4 transition-all"
+                      style={{ background: "#f0ece4", border: "1px solid #e4ddd0", color: "#b8902a" }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+                      </svg>
+                      Open in Google Earth →
+                    </a>
+                    <label className="flex flex-col items-center justify-center w-full rounded-xl cursor-pointer transition-all"
+                      style={{
+                        border: aerialUpload ? "2px solid #b8902a" : "2px dashed #e4ddd0",
+                        background: aerialUpload ? "#fff" : "#faf8f5",
+                        minHeight: "140px",
+                      }}>
+                      {aerialUpload ? (
+                        <div className="relative w-full">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={aerialUpload} alt="Uploaded Google Earth screenshot" className="w-full rounded-xl object-cover" style={{ maxHeight: "200px" }} />
+                          <div className="absolute top-2 right-2 px-2 py-1 rounded-lg text-[10px] tracking-widest uppercase font-bold"
+                            style={{ background: "rgba(184,144,42,0.9)", color: "#fff" }}>
+                            ✓ Ready
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-3 p-8">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#bbb8b0" strokeWidth="1.5">
-                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-                        </svg>
-                        <p className="text-sm font-light" style={{ color: "#888880" }}>Upload Google Earth screenshot</p>
-                        <p className="text-xs" style={{ color: "#bbb8b0" }}>PNG, JPG, WEBP</p>
-                      </div>
-                    )}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAerialFileChange} />
-                  </label>
+                      ) : (
+                        <div className="flex flex-col items-center gap-3 p-6">
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#bbb8b0" strokeWidth="1.5">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                          </svg>
+                          <p className="text-sm font-light" style={{ color: "#888880" }}>Upload Google Earth screenshot</p>
+                          <p className="text-xs" style={{ color: "#bbb8b0" }}>PNG, JPG, WEBP</p>
+                        </div>
+                      )}
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAerialFileChange} />
+                    </label>
+                  </div>
+
+                  <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+                    <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Step 2 — Street View Angle</p>
+                    <p className="text-xs mb-4" style={{ color: "#bbb8b0" }}>
+                      Pick the angle showing the front facade — combined with the aerial for better accuracy.
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {angles.map((angle) => {
+                        const isSelected = angle.heading === selectedHeading;
+                        return (
+                          <button key={angle.heading} onClick={() => setSelectedHeading(angle.heading)}
+                            className="relative rounded-xl overflow-hidden transition-all duration-200"
+                            style={{
+                              border: isSelected ? "2px solid #b8902a" : "2px solid #e4ddd0",
+                              boxShadow: isSelected ? "0 0 16px rgba(184,144,42,0.25)" : "none",
+                            }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={angle.imageBase64} alt={angle.label} className="w-full object-cover" style={{ aspectRatio: "1/1" }} />
+                            <div className="absolute bottom-0 inset-x-0 py-1.5 text-center text-[10px] tracking-widest uppercase"
+                              style={{
+                                background: isSelected ? "rgba(184,144,42,0.9)" : "rgba(0,0,0,0.55)",
+                                color: isSelected ? "#fff" : "#ccc",
+                                backdropFilter: "blur(4px)",
+                              }}>
+                              {angle.label}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 /* ── Street-level: angle picker ── */
@@ -526,7 +548,7 @@ export default function Home() {
                 </p>
                 <p className="text-sm mb-4" style={{ color: "#888880" }}>
                   {style === "aerial"
-                    ? aerialUpload ? "Screenshot uploaded. Hit generate!" : "Upload your Google Earth screenshot first."
+                    ? aerialUpload ? "Aerial + street view ready. Hit generate!" : "Upload your Google Earth screenshot and pick the front street view angle."
                     : "Pick the view showing the front of the property, then generate."}
                 </p>
                 <button
