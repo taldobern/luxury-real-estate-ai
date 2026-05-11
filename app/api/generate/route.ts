@@ -96,29 +96,42 @@ export async function POST(req: NextRequest) {
       prompt = buildAerialDronePrompt(address.trim());
 
       const gemini = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
-
-      const geminiResponse = await gemini.models.generateContent({
-        model: "gemini-3-pro-image-preview",
-        contents: [
-          { text: prompt },
-          { inlineData: { mimeType, data: base64Data } },
-        ],
-        config: {
-          responseModalities: ["IMAGE"],
-        },
-      });
-
-      const parts = geminiResponse.candidates?.[0]?.content?.parts ?? [];
+      // Try Pro 3 times, then fall back to Flash
+      const geminiModels = [
+        "gemini-3-pro-image-preview",
+        "gemini-3-pro-image-preview",
+        "gemini-3-pro-image-preview",
+        "gemini-3.1-flash-image-preview",
+      ];
       let geminiImageData: string | undefined;
-      for (const part of parts) {
-        if (part.inlineData?.data) {
-          geminiImageData = part.inlineData.data;
-          break;
+
+      for (const model of geminiModels) {
+        try {
+          console.log(`[Gemini] Trying ${model}...`);
+          const geminiResponse = await gemini.models.generateContent({
+            model,
+            contents: [
+              { text: prompt },
+              { inlineData: { mimeType, data: base64Data } },
+            ],
+            config: { responseModalities: ["IMAGE"] },
+          });
+
+          const parts = geminiResponse.candidates?.[0]?.content?.parts ?? [];
+          for (const part of parts) {
+            if (part.inlineData?.data) {
+              geminiImageData = part.inlineData.data;
+              break;
+            }
+          }
+          if (geminiImageData) break;
+        } catch (err) {
+          console.warn(`[Gemini] ${model} failed, retrying...`, err);
         }
       }
 
       if (!geminiImageData) {
-        return NextResponse.json({ error: "No image returned by Gemini." }, { status: 500 });
+        return NextResponse.json({ error: "Image generation temporarily unavailable. Please try again." }, { status: 503 });
       }
       imageBuffer = Buffer.from(geminiImageData, "base64");
 
