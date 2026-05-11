@@ -88,7 +88,15 @@ export async function POST(req: NextRequest) {
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    if (style === "aerial" && uploadedImageBase64) {
+    if (style === "aerial-sharp" && uploadedImageBase64) {
+      // Sharp only — zero AI, 100% structural preservation
+      const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
+      const rawBuffer = Buffer.from(base64Data, "base64");
+      originalBase64 = uploadedImageBase64;
+      prompt = "Sharp enhancement only — no AI";
+      imageBuffer = await enhanceAndResizeAerial(rawBuffer);
+
+    } else if (style === "aerial" && uploadedImageBase64) {
       // Aerial/Drone: stitch aerial screenshot + street view, send combined to gpt-image-1
       const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
       const rawBuffer = Buffer.from(base64Data, "base64");

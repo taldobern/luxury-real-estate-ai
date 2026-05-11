@@ -1,6 +1,10 @@
 export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = {
+  "aerial-sharp": {
+    label: "Aerial (Sharp Only)",
+    prompt: "",
+  },
   aerial: {
-    label: "Aerial / Drone View",
+    label: "Aerial / Drone View (AI)",
     prompt:
       "Enhance this real property photo to look like a professional luxury real estate drone photograph. " +
       "Keep the exact same house, architecture, layout, and surroundings — do NOT change the building structure. " +
