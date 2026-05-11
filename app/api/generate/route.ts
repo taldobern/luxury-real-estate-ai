@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       const gemini = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
 
       const geminiResponse = await gemini.models.generateContent({
-        model: "gemini-3.1-flash-image-preview",
+        model: "gemini-3-pro-image-preview",
         contents: [
           { text: prompt },
           { inlineData: { mimeType, data: base64Data } },

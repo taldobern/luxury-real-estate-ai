@@ -86,6 +86,7 @@ export function buildAerialDronePrompt(address: string): string {
   return (
     `Retouch this aerial photograph for luxury real estate marketing. ` +
     `DO NOT alter, move, add, or remove any architectural structures — the building must remain pixel-perfect identical to the original. ` +
+    `DO NOT change the camera angle, altitude, or perspective — the output must be from the exact same top-down aerial viewpoint as the input photo. ` +
     `Only adjust: lighting (natural daylight, balanced exposure), color grading (vivid sky, greener grass), ` +
     `shadow removal, clarity, contrast, and sharpness. ` +
     `Remove cars from the driveway, remove any map markers or overlaid text. ` +
