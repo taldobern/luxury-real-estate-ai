@@ -89,47 +89,41 @@ export async function POST(req: NextRequest) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     if (style === "aerial" && uploadedImageBase64) {
-      // Aerial/Drone: Sharp pre-enhancement + gpt-4o Responses API (same path as ChatGPT)
+      // Aerial/Drone: Sharp enhancement + masked gpt-image-1 inpainting
       const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
       const rawBuffer = Buffer.from(base64Data, "base64");
 
-      // Step 1: Enhance and resize with Sharp
+      // Step 1: Enhance with Sharp (brightness, contrast, sharpness) — zero AI risk
       const enhancedBuffer = await enhanceAndResizeAerial(rawBuffer);
-      const enhancedBase64 = enhancedBuffer.toString("base64");
-      originalBase64 = `data:image/png;base64,${enhancedBase64}`;
+      originalBase64 = `data:image/png;base64,${enhancedBuffer.toString("base64")}`;
 
-      // Step 2: gpt-4o via Responses API — same model path ChatGPT uses
+      // Step 2: Generate mask — house structure locked (opaque), cars/edges unlocked (transparent)
+      const maskBuffer = await createAerialMask(enhancedBuffer);
+
+      // Step 3: gpt-image-1 inpainting — only touches transparent mask regions
       prompt = buildAerialDronePrompt(address.trim());
+      const imageFile = await toFile(enhancedBuffer, "aerial.png", { type: "image/png" });
+      const maskFile = await toFile(maskBuffer, "mask.png", { type: "image/png" });
 
-      const response = await openai.responses.create({
-        model: "gpt-4o",
-        input: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "input_image",
-                image_url: `data:image/png;base64,${enhancedBase64}`,
-              },
-              {
-                type: "input_text",
-                text: prompt,
-              },
-            ],
-          },
-        ],
-        tools: [{ type: "image_generation", quality: "high", size: "1024x1024" }],
+      const response = await openai.images.edit({
+        model: "gpt-image-1",
+        image: imageFile,
+        mask: maskFile,
+        prompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "high",
       });
-
-      const imageGenOutput = response.output.find(
-        (item: { type: string }) => item.type === "image_generation_call"
-      ) as { type: string; result: string } | undefined;
-
-      if (!imageGenOutput?.result) {
-        return NextResponse.json({ error: "No image returned by gpt-4o." }, { status: 500 });
+      const imageData = response.data?.[0];
+      if (!imageData) return NextResponse.json({ error: "No image returned by OpenAI." }, { status: 500 });
+      if (imageData.b64_json) {
+        imageBuffer = Buffer.from(imageData.b64_json, "base64");
+      } else if (imageData.url) {
+        const imgRes = await fetch(imageData.url);
+        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+      } else {
+        return NextResponse.json({ error: "Unexpected API response format." }, { status: 500 });
       }
-
-      imageBuffer = Buffer.from(imageGenOutput.result, "base64");
     } else {
       // All other styles: Street View + OpenAI gpt-image-1
       let streetViewBuffer: Buffer;
