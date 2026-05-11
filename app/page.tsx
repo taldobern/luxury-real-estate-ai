@@ -39,6 +39,12 @@ const RefreshIcon = () => (
   </svg>
 );
 
+const TrashIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+  </svg>
+);
+
 const SearchIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
@@ -288,7 +294,7 @@ export default function Home() {
       if (!res.ok || data.error) { setError(data.error ?? "Generation failed."); setStep("picking-angle"); return; }
 
       const newItem: HistoryItem = {
-        id: Date.now().toString(),
+        id: data.generationId ?? Date.now().toString(),
         imageBase64: data.imageBase64,
         originalBase64: data.originalBase64,
         address: address.trim(),
@@ -321,6 +327,20 @@ export default function Home() {
     setAngles([]);
     setAerialUpload(null);
     setError(null);
+  }
+
+  async function handleDeleteCurrent() {
+    if (!currentImage) return;
+    // Fire-and-forget — delete from DB but don't block UI
+    fetch("/api/delete", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+      body: JSON.stringify({ id: currentImage.id }),
+    }).catch(() => {});
+    // Remove from local history and reset
+    setHistory((prev) => prev.filter((h) => h.id !== currentImage.id));
+    setCurrentImage(null);
+    handleReset();
   }
 
   const styleKeys = Object.keys(STYLE_CONFIGS) as StyleKey[];
@@ -603,6 +623,12 @@ export default function Home() {
                       className="px-4 py-2.5 rounded-xl text-xs tracking-widest uppercase flex items-center justify-center gap-2"
                       style={{ background: "#f7f4ef", color: "#888880", border: "1px solid #e4ddd0" }}>
                       <RefreshIcon />Redo
+                    </button>
+                    <button onClick={handleDeleteCurrent}
+                      title="Delete this image"
+                      className="px-3 py-2.5 rounded-xl flex items-center justify-center transition-colors"
+                      style={{ background: "#fff0f0", color: "#ef4444", border: "1px solid #fcc" }}>
+                      <TrashIcon />
                     </button>
                   </div>
                 </div>

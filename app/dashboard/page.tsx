@@ -25,10 +25,26 @@ const DownloadIcon = () => (
   </svg>
 );
 
+const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+  </svg>
+);
+
 export default function DashboardPage() {
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setAuthToken(session.access_token);
+    });
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -63,6 +79,21 @@ export default function DashboardPage() {
     a.download = `luxvision_${address.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.png`;
     a.target = "_blank";
     a.click();
+  }
+
+  async function handleDelete(id: string) {
+    setDeletingId(id);
+    try {
+      await fetch("/api/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+        body: JSON.stringify({ id }),
+      });
+      setGenerations((prev) => prev.filter((g) => g.id !== id));
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
   }
 
   const trialDaysLeft = profile?.trial_ends_at
@@ -165,7 +196,32 @@ export default function DashboardPage() {
                 {/* Hover overlay */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-3"
                   style={{ background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 55%)" }}>
-                  <div />
+                  <div className="flex justify-end">
+                    {confirmDeleteId === gen.id ? (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleDelete(gen.id)}
+                          disabled={deletingId === gen.id}
+                          className="px-2 py-1 rounded-lg text-[10px] font-bold tracking-wide"
+                          style={{ background: "#ef4444", color: "#fff" }}>
+                          {deletingId === gen.id ? "..." : "Yes, delete"}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="px-2 py-1 rounded-lg text-[10px]"
+                          style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(gen.id)}
+                        className="p-1.5 rounded-lg transition-colors"
+                        style={{ background: "rgba(239,68,68,0.8)", color: "#fff" }}>
+                        <TrashIcon />
+                      </button>
+                    )}
+                  </div>
                   <div>
                     <p className="text-white text-xs font-medium line-clamp-2 mb-1">{gen.address}</p>
                     <div className="flex items-center justify-between">

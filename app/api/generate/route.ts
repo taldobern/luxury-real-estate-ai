@@ -15,6 +15,7 @@ export interface GenerateResponse {
   imageBase64: string;
   originalBase64: string;
   prompt: string;
+  generationId?: string;
 }
 
 async function fetchStreetView(address: string, heading = 0): Promise<Buffer> {
@@ -182,18 +183,20 @@ export async function POST(req: NextRequest) {
       imageUrl = urlData.publicUrl;
 
       // Save generation record + increment usage
-      await Promise.all([
+      const [{ data: insertedGen }] = await Promise.all([
         admin.from("generations").insert({
           user_id: user.id,
           address: address.trim(),
           style,
           image_url: imageUrl,
           prompt,
-        }),
+        }).select("id").single(),
         admin.from("profiles")
           .update({ images_used: (profile?.images_used ?? 0) + 1 })
           .eq("id", user.id),
       ]);
+
+      return NextResponse.json({ imageBase64, originalBase64, prompt, generationId: insertedGen?.id } satisfies GenerateResponse);
     }
 
     return NextResponse.json({ imageBase64, originalBase64, prompt } satisfies GenerateResponse);
