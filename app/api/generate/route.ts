@@ -96,11 +96,15 @@ export async function POST(req: NextRequest) {
       // Step 1: Enhance aerial with Sharp
       const enhancedAerial = await enhanceAndResizeAerial(rawBuffer);
 
-      // Step 2: Fetch street view for the selected heading (front facade reference)
-      const streetViewBuffer = await fetchStreetView(address.trim(), heading);
-
-      // Step 3: Stitch — aerial on top, street view on bottom = 1024x1024
-      const combinedBuffer = await stitchAerialAndStreetView(enhancedAerial, streetViewBuffer);
+      // Step 2: Try to fetch street view — optional, graceful fallback if unavailable
+      let combinedBuffer: Buffer;
+      try {
+        const streetViewBuffer = await fetchStreetView(address.trim(), heading);
+        combinedBuffer = await stitchAerialAndStreetView(enhancedAerial, streetViewBuffer);
+      } catch {
+        // No street view available — use aerial only
+        combinedBuffer = enhancedAerial;
+      }
       originalBase64 = `data:image/png;base64,${enhancedAerial.toString("base64")}`;
 
       // Step 4: Send combined image to gpt-image-1 with two-image prompt

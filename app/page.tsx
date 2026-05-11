@@ -250,7 +250,16 @@ export default function Home() {
         body: JSON.stringify({ address: address.trim() }),
       });
       const data: StreetViewResponse & { error?: string } = await res.json();
-      if (!res.ok || data.error) { setError(data.error ?? "Could not load Street View."); setStep("input"); return; }
+      if (!res.ok || data.error) {
+        if (style === "aerial") {
+          // Street view optional for aerial — proceed with upload-only panel
+          setAngles([]);
+          return;
+        }
+        setError(data.error ?? "Could not load Street View.");
+        setStep("input");
+        return;
+      }
       setAngles(data.angles);
       setSelectedHeading(0);
     } catch {
@@ -453,7 +462,7 @@ export default function Home() {
         )}
 
         {/* ── Angle picker ── */}
-        {step === "picking-angle" && angles.length > 0 && (
+        {step === "picking-angle" && (angles.length > 0 || style === "aerial") && (
           <div className="grid md:grid-cols-3 gap-5 mb-6">
             <div className="md:col-span-2">
               {style === "aerial" ? (
@@ -504,7 +513,7 @@ export default function Home() {
                     </label>
                   </div>
 
-                  <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
+                  {angles.length > 0 && <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
                     <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#888880" }}>Step 2 — Street View Angle</p>
                     <p className="text-xs mb-4" style={{ color: "#bbb8b0" }}>
                       Pick the angle showing the front facade — combined with the aerial for better accuracy.
@@ -533,7 +542,7 @@ export default function Home() {
                         );
                       })}
                     </div>
-                  </div>
+                  </div>}
                 </div>
               ) : (
                 /* ── Street-level: angle picker ── */
