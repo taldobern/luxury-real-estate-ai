@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI, { toFile } from "openai";
-import Replicate from "replicate";
 import { buildPrompt, buildAerialDronePrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
-import { enhanceAndResizeAerial } from "@/lib/imageUtils";
+import { enhanceAndResizeAerial, createAerialMask } from "@/lib/imageUtils";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 export interface GenerateRequest {
@@ -90,42 +89,41 @@ export async function POST(req: NextRequest) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     if (style === "aerial" && uploadedImageBase64) {
-      // Aerial/Drone: Sharp pre-enhancement + ControlNet Canny (structure-preserving)
+      // Aerial/Drone: Sharp enhancement + masked gpt-image-1 inpainting
       const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
       const rawBuffer = Buffer.from(base64Data, "base64");
 
-      // Step 1: Enhance and resize with Sharp
+      // Step 1: Enhance with Sharp (brightness, contrast, sharpness) — zero AI risk
       const enhancedBuffer = await enhanceAndResizeAerial(rawBuffer);
       originalBase64 = `data:image/png;base64,${enhancedBuffer.toString("base64")}`;
 
-      // Step 2: ControlNet Canny via Replicate
-      // Model runs Canny edge detection internally and generates photorealistic output
-      // that strictly follows the structural lines from the original image
+      // Step 2: Generate mask — house structure locked (opaque), cars/edges unlocked (transparent)
+      const maskBuffer = await createAerialMask(enhancedBuffer);
+
+      // Step 3: gpt-image-1 inpainting — only touches transparent mask regions
       prompt = buildAerialDronePrompt(address.trim());
-      const replicate = new Replicate({ auth: process.env.REPLICATE_API_KEY });
-      const imageBlob = new Blob([enhancedBuffer], { type: "image/png" });
+      const imageFile = await toFile(enhancedBuffer, "aerial.png", { type: "image/png" });
+      const maskFile = await toFile(maskBuffer, "mask.png", { type: "image/png" });
 
-      const output = await replicate.run(
-        "jagilley/controlnet-canny:aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
-        {
-          input: {
-            image: imageBlob,
-            prompt: prompt,
-            a_prompt: "best quality, extremely detailed, photorealistic, luxury real estate aerial photography, 8k uhd",
-            n_prompt: "blurry, low quality, cartoon, painting, illustration, watermark, text, distorted, deformed, bad anatomy",
-            low_threshold: 80,
-            high_threshold: 200,
-            ddim_steps: 30,
-            scale: 9,
-            num_samples: "1",
-          },
-        }
-      );
-
-      const outputUrl = Array.isArray(output) ? output[0] : output;
-      if (!outputUrl) return NextResponse.json({ error: "No image returned by ControlNet." }, { status: 500 });
-      const imgRes = await fetch(outputUrl as string);
-      imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+      const response = await openai.images.edit({
+        model: "gpt-image-1",
+        image: imageFile,
+        mask: maskFile,
+        prompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "high",
+      });
+      const imageData = response.data?.[0];
+      if (!imageData) return NextResponse.json({ error: "No image returned by OpenAI." }, { status: 500 });
+      if (imageData.b64_json) {
+        imageBuffer = Buffer.from(imageData.b64_json, "base64");
+      } else if (imageData.url) {
+        const imgRes = await fetch(imageData.url);
+        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+      } else {
+        return NextResponse.json({ error: "Unexpected API response format." }, { status: 500 });
+      }
     } else {
       // All other styles: Street View + OpenAI gpt-image-1
       let streetViewBuffer: Buffer;

@@ -83,10 +83,12 @@ export function buildPrompt(address: string, style: StyleKey): string {
  */
 export function buildAerialDronePrompt(address: string): string {
   return (
-    `professional luxury real estate aerial drone photograph, bird's eye view, ` +
-    `bright natural daylight, clear blue sky, photorealistic, ` +
-    `tile roof, desert landscaping, clean driveway with no cars, no vehicles, ` +
-    `high resolution real estate marketing photo, sharp focus, ` +
-    `property at ${address}`
+    `Create a high-resolution photorealistic aerial image from a slightly elevated bird's-eye perspective ` +
+    `(drone-style, approx. 20–30 feet above ground), maintaining accurate architectural proportions. ` +
+    `Brighten the overall image with natural daylight, remove harsh shadows, and balance exposure while ` +
+    `preserving realistic textures and materials. Enhance clarity, contrast, and color accuracy for luxury ` +
+    `real estate marketing. The result should look like a professional architectural drone photograph taken ` +
+    `on a bright, clear day. Please remove any cars from driveway and the google location mark and address. ` +
+    `This is the real property at ${address}.`
   );
 }
