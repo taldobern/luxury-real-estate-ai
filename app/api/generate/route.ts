@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI, { toFile } from "openai";
+import { GoogleGenAI } from "@google/genai";
 import { buildPrompt, buildAerialDronePrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
@@ -88,41 +89,33 @@ export async function POST(req: NextRequest) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     if (style === "aerial" && uploadedImageBase64) {
-      // Aerial/Drone: gpt-4o Responses API — same pipeline ChatGPT uses internally
+      // Aerial/Drone: Gemini Nano Banana 2 (gemini-3.1-flash-image-preview)
       const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
       const mimeType = uploadedImageBase64.startsWith("data:image/png") ? "image/png" : "image/jpeg";
       originalBase64 = uploadedImageBase64;
       prompt = buildAerialDronePrompt(address.trim());
 
-      const response = await openai.responses.create({
-        model: "gpt-4o",
-        input: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "input_image",
-                image_url: `data:${mimeType};base64,${base64Data}`,
-                detail: "high",
-              } as { type: "input_image"; image_url: string; detail: "high" },
-              {
-                type: "input_text",
-                text: prompt,
-              },
-            ],
-          },
+      const gemini = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
+
+      const geminiResponse = await gemini.models.generateContent({
+        model: "gemini-3.1-flash-image-preview",
+        contents: [
+          { text: prompt },
+          { inlineData: { mimeType, data: base64Data } },
         ],
-        tools: [{ type: "image_generation", quality: "high", size: "1024x1024" }],
+        config: {
+          responseModalities: ["IMAGE"],
+        },
       });
 
-      const imageGenOutput = response.output.find(
-        (item: { type: string }) => item.type === "image_generation_call"
-      ) as { type: string; result: string } | undefined;
+      const imagePart = geminiResponse.candidates?.[0]?.content?.parts?.find(
+        (part: { inlineData?: { data: string } }) => part.inlineData
+      );
 
-      if (!imageGenOutput?.result) {
-        return NextResponse.json({ error: "No image returned by gpt-4o." }, { status: 500 });
+      if (!imagePart?.inlineData?.data) {
+        return NextResponse.json({ error: "No image returned by Gemini." }, { status: 500 });
       }
-      imageBuffer = Buffer.from(imageGenOutput.result, "base64");
+      imageBuffer = Buffer.from(imagePart.inlineData.data, "base64");
 
     } else {
       // All other styles: Street View + OpenAI gpt-image-1
