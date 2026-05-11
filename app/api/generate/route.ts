@@ -108,14 +108,19 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      const imagePart = geminiResponse.candidates?.[0]?.content?.parts?.find(
-        (part: { inlineData?: { data: string } }) => part.inlineData
-      );
+      const parts = geminiResponse.candidates?.[0]?.content?.parts ?? [];
+      let geminiImageData: string | undefined;
+      for (const part of parts) {
+        if (part.inlineData?.data) {
+          geminiImageData = part.inlineData.data;
+          break;
+        }
+      }
 
-      if (!imagePart?.inlineData?.data) {
+      if (!geminiImageData) {
         return NextResponse.json({ error: "No image returned by Gemini." }, { status: 500 });
       }
-      imageBuffer = Buffer.from(imagePart.inlineData.data, "base64");
+      imageBuffer = Buffer.from(geminiImageData, "base64");
 
     } else {
       // All other styles: Street View + OpenAI gpt-image-1
