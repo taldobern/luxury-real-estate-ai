@@ -251,7 +251,7 @@ export default function Home() {
       });
       const data: StreetViewResponse & { error?: string } = await res.json();
       if (!res.ok || data.error) {
-        if (style === "aerial" || style === "aerial-sharp") {
+        if (style === "aerial") {
           // Street view optional for aerial — proceed with upload-only panel
           setAngles([]);
           return;
@@ -462,10 +462,10 @@ export default function Home() {
         )}
 
         {/* ── Angle picker ── */}
-        {step === "picking-angle" && (angles.length > 0 || style === "aerial" || style === "aerial-sharp") && (
+        {step === "picking-angle" && (angles.length > 0 || style === "aerial") && (
           <div className="grid md:grid-cols-3 gap-5 mb-6">
             <div className="md:col-span-2">
-              {style === "aerial" || style === "aerial-sharp" ? (
+              {style === "aerial" ? (
                 /* ── Aerial: Google Earth upload + street view angle picker ── */
                 <div className="space-y-4">
                   <div className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e4ddd0" }}>
@@ -562,7 +562,7 @@ export default function Home() {
                 </p>
                 <button
                   onClick={() => handleGenerate(selectedHeading)}
-                  disabled={(style === "aerial" || style === "aerial-sharp") && !aerialUpload}
+                  disabled={style === "aerial" && !aerialUpload}
                   className="w-full py-3 rounded-xl text-sm tracking-widest uppercase flex items-center justify-center gap-2 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)", color: "#fff", boxShadow: "0 4px 16px rgba(184,144,42,0.3)" }}>
                   <SparkleIcon />Generate Image

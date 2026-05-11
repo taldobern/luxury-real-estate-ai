@@ -1,10 +1,6 @@
 export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = {
-  "aerial-sharp": {
-    label: "Aerial (Sharp Only)",
-    prompt: "",
-  },
   aerial: {
-    label: "Aerial / Drone View (AI)",
+    label: "Aerial / Drone View",
     prompt:
       "Enhance this real property photo to look like a professional luxury real estate drone photograph. " +
       "Keep the exact same house, architecture, layout, and surroundings — do NOT change the building structure. " +
@@ -87,13 +83,16 @@ export function buildPrompt(address: string, style: StyleKey): string {
  */
 export function buildAerialDronePrompt(address: string): string {
   return (
-    `The main image is an aerial Google Earth screenshot of the property at ${address}. ` +
-    `There is a small street-level reference photo in the bottom-right corner showing the SAME property's front facade — use it only as a color and detail reference for the garage, entry, columns, and wall finish. ` +
-    `Ignore any neighboring houses visible in the street-level inset. Focus only on the property shown in the aerial view. ` +
-    `Generate a professional high-resolution aerial drone photograph of this exact property. ` +
-    `THE OUTPUT MUST BE AN AERIAL TOP-DOWN BIRD'S EYE VIEW — not a street-level photo. ` +
-    `Preserve the exact roof structure and layout from the aerial. ` +
-    `Brighten with natural daylight, remove harsh shadows, enhance colors for luxury real estate marketing. ` +
-    `Remove all cars from the driveway. Remove any Google Earth pins, address labels, or overlay text.`
+    `Create a high-resolution photorealistic aerial image from a slightly elevated bird's-eye perspective ` +
+    `(drone-style, approx. 20–30 feet above ground), maintaining accurate architectural proportions. ` +
+    `Brighten the overall image with natural daylight, remove harsh shadows, and balance exposure while ` +
+    `preserving realistic textures and materials. Enhance clarity, contrast, and color accuracy for luxury ` +
+    `real estate marketing. The result should look like a professional architectural drone photograph taken ` +
+    `on a bright, clear day. ` +
+    `Please remove any cars from driveway and the google location mark and address. ` +
+    `CRITICAL: Do not change, add, or remove any architectural structures. ` +
+    `Keep the exact same roof lines, number of garage doors, windows, columns, solar panels, ` +
+    `and every building element exactly as shown in the original image. ` +
+    `This is the real property at ${address}.`
   );
 }

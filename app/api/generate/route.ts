@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI, { toFile } from "openai";
 import { buildPrompt, buildAerialDronePrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
-import { enhanceAndResizeAerial, createAerialMask, stitchAerialAndStreetView } from "@/lib/imageUtils";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 export interface GenerateRequest {
@@ -88,37 +87,13 @@ export async function POST(req: NextRequest) {
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    if (style === "aerial-sharp" && uploadedImageBase64) {
-      // Sharp only — zero AI, 100% structural preservation
+    if (style === "aerial" && uploadedImageBase64) {
+      // Aerial/Drone: raw uploaded image → gpt-image-1 with enhanced Windy prompt
       const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
-      const rawBuffer = Buffer.from(base64Data, "base64");
+      const uploadedBuffer = Buffer.from(base64Data, "base64");
       originalBase64 = uploadedImageBase64;
-      prompt = "Sharp enhancement only — no AI";
-      imageBuffer = await enhanceAndResizeAerial(rawBuffer);
-
-    } else if (style === "aerial" && uploadedImageBase64) {
-      // Aerial/Drone: stitch aerial screenshot + street view, send combined to gpt-image-1
-      const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
-      const rawBuffer = Buffer.from(base64Data, "base64");
-
-      // Step 1: Enhance aerial with Sharp
-      const enhancedAerial = await enhanceAndResizeAerial(rawBuffer);
-
-      // Step 2: Try to fetch street view — optional, graceful fallback if unavailable
-      let combinedBuffer: Buffer;
-      try {
-        const streetViewBuffer = await fetchStreetView(address.trim(), heading);
-        combinedBuffer = await stitchAerialAndStreetView(enhancedAerial, streetViewBuffer);
-      } catch {
-        // No street view available — use aerial only
-        combinedBuffer = enhancedAerial;
-      }
-      originalBase64 = `data:image/png;base64,${enhancedAerial.toString("base64")}`;
-
-      // Step 4: Send combined image to gpt-image-1 with two-image prompt
       prompt = buildAerialDronePrompt(address.trim());
-      const imageFile = await toFile(combinedBuffer, "combined.png", { type: "image/png" });
-
+      const imageFile = await toFile(uploadedBuffer, "aerial.jpg", { type: "image/jpeg" });
       const response = await openai.images.edit({
         model: "gpt-image-1",
         image: imageFile,
