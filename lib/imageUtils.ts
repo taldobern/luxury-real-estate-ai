@@ -43,14 +43,15 @@ export async function createAerialMask(imageBuffer: Buffer): Promise<Buffer> {
     const y = Math.floor(i / width);
 
     // Very dark pixels = vehicles (cars, trucks, SUVs)
-    const isVehicle = r < 85 && g < 85 && b < 85;
+    // Using strict threshold to avoid catching shadows or dark architectural details
+    const isVehicle = r < 55 && g < 55 && b < 55;
 
-    // Outer 7% border = sky, neighboring properties, street edges
+    // Outer 5% border = sky, neighboring properties, street edges
     const isEdge =
-      x < width * 0.07 ||
-      x > width * 0.93 ||
-      y < height * 0.07 ||
-      y > height * 0.93;
+      x < width * 0.05 ||
+      x > width * 0.95 ||
+      y < height * 0.05 ||
+      y > height * 0.95;
 
     const transparent = isVehicle || isEdge;
 
