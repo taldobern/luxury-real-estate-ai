@@ -1,24 +1,22 @@
 import sharp from "sharp";
 
 /**
- * Stitches aerial screenshot (top) and street view (bottom) into a single
- * 1024x1024 image. Gives gpt-image-1 both perspectives of the same property.
+ * Aerial image fills the full 1024x1024 canvas.
+ * Street view is a small reference thumbnail (220x220) in the bottom-right corner.
+ * Aerial stays dominant so gpt-image-1 outputs an aerial view, not a street-level one.
  */
 export async function stitchAerialAndStreetView(
   aerialBuffer: Buffer,
   streetViewBuffer: Buffer
 ): Promise<Buffer> {
   const [aerial, street] = await Promise.all([
-    sharp(aerialBuffer).resize(1024, 512, { fit: "cover", position: "center" }).png().toBuffer(),
-    sharp(streetViewBuffer).resize(1024, 512, { fit: "cover", position: "center" }).png().toBuffer(),
+    sharp(aerialBuffer).resize(1024, 1024, { fit: "cover", position: "center" }).png().toBuffer(),
+    sharp(streetViewBuffer).resize(220, 220, { fit: "cover", position: "center" }).png().toBuffer(),
   ]);
 
-  return sharp({
-    create: { width: 1024, height: 1024, channels: 3, background: { r: 10, g: 10, b: 10 } },
-  })
+  return sharp(aerial)
     .composite([
-      { input: aerial, left: 0, top: 0 },
-      { input: street, left: 0, top: 512 },
+      { input: street, left: 1024 - 220 - 12, top: 1024 - 220 - 12 },
     ])
     .png()
     .toBuffer();

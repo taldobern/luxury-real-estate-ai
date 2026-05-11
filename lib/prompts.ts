@@ -83,14 +83,13 @@ export function buildPrompt(address: string, style: StyleKey): string {
  */
 export function buildAerialDronePrompt(address: string): string {
   return (
-    `This image contains TWO views of the exact same property at ${address}. ` +
-    `TOP HALF: aerial Google Earth screenshot showing the roof layout, footprint, driveway, and surrounding area from above. ` +
-    `BOTTOM HALF: street-level photo showing the front facade with exact architectural details — garage doors, entry arch, columns, windows, and exterior finish. ` +
-    `Using BOTH halves as reference, generate a single professional high-resolution aerial drone photograph of this exact property. ` +
-    `Preserve the exact roof structure and property layout from the top half. ` +
-    `Use the bottom half to correctly render architectural details that are difficult to see from above — especially the garage, entry roof, columns, and wall colors. ` +
+    `The main image is an aerial Google Earth screenshot of the property at ${address}. ` +
+    `There is a small street-level reference photo in the bottom-right corner showing the SAME property's front facade — use it only as a color and detail reference for the garage, entry, columns, and wall finish. ` +
+    `Ignore any neighboring houses visible in the street-level inset. Focus only on the property shown in the aerial view. ` +
+    `Generate a professional high-resolution aerial drone photograph of this exact property. ` +
+    `THE OUTPUT MUST BE AN AERIAL TOP-DOWN BIRD'S EYE VIEW — not a street-level photo. ` +
+    `Preserve the exact roof structure and layout from the aerial. ` +
     `Brighten with natural daylight, remove harsh shadows, enhance colors for luxury real estate marketing. ` +
-    `Remove all cars from the driveway. Remove any Google Earth pins, address labels, or overlay text. ` +
-    `Output: a single aerial drone photo of this property only — no split image, no street view in the output.`
+    `Remove all cars from the driveway. Remove any Google Earth pins, address labels, or overlay text.`
   );
 }
