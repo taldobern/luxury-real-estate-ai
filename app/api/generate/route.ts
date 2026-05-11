@@ -88,30 +88,42 @@ export async function POST(req: NextRequest) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     if (style === "aerial" && uploadedImageBase64) {
-      // Aerial/Drone: raw uploaded image → gpt-image-1 with enhanced Windy prompt
+      // Aerial/Drone: gpt-4o Responses API — same pipeline ChatGPT uses internally
       const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
-      const uploadedBuffer = Buffer.from(base64Data, "base64");
+      const mimeType = uploadedImageBase64.startsWith("data:image/png") ? "image/png" : "image/jpeg";
       originalBase64 = uploadedImageBase64;
       prompt = buildAerialDronePrompt(address.trim());
-      const imageFile = await toFile(uploadedBuffer, "aerial.jpg", { type: "image/jpeg" });
-      const response = await openai.images.edit({
-        model: "gpt-image-1",
-        image: imageFile,
-        prompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "high",
+
+      const response = await openai.responses.create({
+        model: "gpt-4o",
+        input: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_image",
+                image_url: `data:${mimeType};base64,${base64Data}`,
+                detail: "high",
+              } as { type: "input_image"; image_url: string; detail: "high" },
+              {
+                type: "input_text",
+                text: prompt,
+              },
+            ],
+          },
+        ],
+        tools: [{ type: "image_generation", quality: "high", size: "1024x1024" }],
       });
-      const imageData = response.data?.[0];
-      if (!imageData) return NextResponse.json({ error: "No image returned by OpenAI." }, { status: 500 });
-      if (imageData.b64_json) {
-        imageBuffer = Buffer.from(imageData.b64_json, "base64");
-      } else if (imageData.url) {
-        const imgRes = await fetch(imageData.url);
-        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
-      } else {
-        return NextResponse.json({ error: "Unexpected API response format." }, { status: 500 });
+
+      const imageGenOutput = response.output.find(
+        (item: { type: string }) => item.type === "image_generation_call"
+      ) as { type: string; result: string } | undefined;
+
+      if (!imageGenOutput?.result) {
+        return NextResponse.json({ error: "No image returned by gpt-4o." }, { status: 500 });
       }
+      imageBuffer = Buffer.from(imageGenOutput.result, "base64");
+
     } else {
       // All other styles: Street View + OpenAI gpt-image-1
       let streetViewBuffer: Buffer;
