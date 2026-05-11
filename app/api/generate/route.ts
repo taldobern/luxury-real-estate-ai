@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI, { toFile } from "openai";
 import { buildPrompt, buildAerialDronePrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
+import { enhanceAndResizeAerial, createAerialMask } from "@/lib/imageUtils";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 export interface GenerateRequest {
@@ -88,15 +89,26 @@ export async function POST(req: NextRequest) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     if (style === "aerial" && uploadedImageBase64) {
-      // Aerial/Drone: OpenAI gpt-image-1 with uploaded Google Earth screenshot
-      originalBase64 = uploadedImageBase64;
-      prompt = buildAerialDronePrompt(address.trim());
+      // Aerial/Drone: Sharp enhancement + masked gpt-image-1 inpainting
       const base64Data = uploadedImageBase64.replace(/^data:image\/\w+;base64,/, "");
-      const uploadedBuffer = Buffer.from(base64Data, "base64");
-      const imageFile = await toFile(uploadedBuffer, "aerial.jpg", { type: "image/jpeg" });
+      const rawBuffer = Buffer.from(base64Data, "base64");
+
+      // Step 1: Enhance with Sharp (brightness, contrast, sharpness) — zero AI risk
+      const enhancedBuffer = await enhanceAndResizeAerial(rawBuffer);
+      originalBase64 = `data:image/png;base64,${enhancedBuffer.toString("base64")}`;
+
+      // Step 2: Generate mask — house structure locked (opaque), cars/edges unlocked (transparent)
+      const maskBuffer = await createAerialMask(enhancedBuffer);
+
+      // Step 3: gpt-image-1 inpainting — only touches transparent mask regions
+      prompt = buildAerialDronePrompt(address.trim());
+      const imageFile = await toFile(enhancedBuffer, "aerial.png", { type: "image/png" });
+      const maskFile = await toFile(maskBuffer, "mask.png", { type: "image/png" });
+
       const response = await openai.images.edit({
         model: "gpt-image-1",
         image: imageFile,
+        mask: maskFile,
         prompt,
         n: 1,
         size: "1024x1024",

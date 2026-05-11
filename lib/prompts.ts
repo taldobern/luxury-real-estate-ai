@@ -83,11 +83,11 @@ export function buildPrompt(address: string, style: StyleKey): string {
  */
 export function buildAerialDronePrompt(address: string): string {
   return (
-    `Retouch and enhance this aerial photo of a real property. Do NOT add, remove, or change any structures, features, or elements — no new pools, no new landscaping, no new buildings, no changes to the garage, roof, or driveway layout. ` +
-    `Every architectural detail must remain exactly as shown in the original image. ` +
-    `Only apply the following enhancements: brighten with natural daylight, remove harsh shadows, balance exposure, enhance clarity and contrast, improve color accuracy for luxury real estate marketing. ` +
-    `The result must look like a professional high-resolution drone photograph of the exact same property on a bright clear day. ` +
-    `Remove any cars from the driveway, remove the Google location pin and any address labels. ` +
-    `This is the real property at ${address}. The property structure must be 100% identical to the original photo.`
+    `Remove all vehicles, cars, and trucks from the driveways and streets. ` +
+    `Fill removed vehicle areas naturally with the underlying driveway or ground surface. ` +
+    `Remove any Google Maps pins, address number labels, or text overlaid on the property. ` +
+    `Clean up and brighten the outer edges and sky areas only. ` +
+    `Do not change any house structures, roof lines, garage doors, pools, or landscaping. ` +
+    `This is the real property at ${address}.`
   );
 }
