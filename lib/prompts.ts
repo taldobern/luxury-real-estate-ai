@@ -64,62 +64,33 @@ export type StyleKey = keyof typeof STYLE_CONFIGS;
 
 /**
  * Builds the image edit prompt for street-level styles.
- * Translated from SD-style schema into OpenAI-compatible instructional language.
+ * Always anchors to the real property — enhance, never replace.
  */
 export function buildPrompt(address: string, style: StyleKey): string {
-  const styleConfig = STYLE_CONFIGS[style] ?? STYLE_CONFIGS["luxury-modern"];
+  const styleConfig = STYLE_CONFIGS[style] ?? STYLE_CONFIGS["aerial"];
 
   return (
-    `You are a professional photo editor retouching a real estate street-level photograph for a luxury marketing brochure. ` +
-    `Your task is photo retouching only — do NOT generate a new image, do NOT redesign the building, do NOT use CGI or 3D modeling. ` +
-
-    `STYLE TO APPLY: ${styleConfig.prompt} ` +
-
-    `QUALITY TARGET: ` +
-    `Ultra-realistic architectural photography, 8K resolution, crisp focus, wide-angle professional lens. ` +
-    `Apply physically-based realistic textures to existing surfaces — enhance material definition without changing shapes. ` +
-    `High dynamic range, clean glass reflections, soft realistic shadows. ` +
-    `Professional real estate magazine quality — this is the real property at ${address}. ` +
-
-    `WHAT TO REMOVE: ` +
-    `Remove all cars, vehicles, and license plates. Remove power lines and utility poles. ` +
-    `Remove trash, street signs, and people. Remove any text, watermarks, or overlays. ` +
-
-    `WHAT YOU MUST NEVER CHANGE: ` +
-    `Do NOT alter, move, add, or remove any windows, doors, or roof lines. ` +
-    `Do NOT change the building structure, layout, proportions, or facade. ` +
-    `Do NOT add architectural elements that are not in the original photo. ` +
-    `Do NOT produce warped lines, distorted proportions, or hallucinatory architecture. ` +
-    `Every window, door, wall, and structural detail must be identical to the original photograph.`
+    `${styleConfig.prompt} ` +
+    `This is the real property at ${address}. ` +
+    `The architectural structure must remain identical to the original photo. ` +
+    `Photorealistic, 8K quality, sharp focus, magazine cover ready.`
   );
 }
 
 /**
  * Builds the aerial drone prompt for satellite source images.
- * Translated from SD-style schema into OpenAI-compatible instructional language.
+ * Transforms a flat top-down satellite image into a luxury drone photo.
  */
-export function buildAerialDronePrompt(_address: string): string {
+export function buildAerialDronePrompt(address: string): string {
+  void address; // reserved for future use
   return (
-    `You are a professional photo editor retouching an aerial real estate photograph for a luxury marketing brochure. ` +
-    `Your task is photo retouching only — do NOT generate a new image, do NOT create a rendering, do NOT use CGI or 3D modeling. ` +
-
-    `WHAT TO ENHANCE: ` +
-    `Apply natural daylight with balanced exposure and perfect global illumination. ` +
-    `Enhance the sky to vivid blue with soft clouds. Make the grass vibrant and green. ` +
-    `Boost clarity, contrast, sharpness, and color accuracy to 8K ultra-realistic aerial photography quality. ` +
-    `Improve roof texture detail, terrain textures, and crisp edges. ` +
-    `The result must look like a professional drone photograph taken on a bright clear day — ` +
-    `high-end real estate magazine quality, photorealistic, sharp focus throughout. ` +
-
-    `WHAT TO REMOVE: ` +
-    `Remove all cars and vehicles. Remove all map markers, pins, labels, text, watermarks, and overlays. ` +
-
-    `WHAT YOU MUST NEVER CHANGE: ` +
-    `Do NOT alter the roof lines, shape, or footprint of any building. ` +
-    `Do NOT change, add, or remove any windows, garage doors, columns, solar panels, or any architectural element. ` +
-    `Do NOT modify the layout, proportions, or topography of the property. ` +
-    `Do NOT add foliage, trees, or objects that are not in the original. ` +
-    `Do NOT produce blurred edges, melted textures, distorted shapes, or hallucinatory structures. ` +
-    `The building structure must be pixel-perfect identical to the original photograph.`
+    `Retouch this aerial photograph for luxury real estate marketing. ` +
+    `DO NOT alter, move, add, or remove any architectural structures — the building must remain pixel-perfect identical to the original. ` +
+    `Only adjust: lighting (natural daylight, balanced exposure), color grading (vivid sky, greener grass), ` +
+    `shadow removal, clarity, contrast, and sharpness. ` +
+    `Remove cars from the driveway, remove any map markers or overlaid text. ` +
+    `The result must look like the exact same photograph retouched by a professional photo editor — ` +
+    `not a new image, not a rendering. Every roof line, window, garage door, column, solar panel, ` +
+    `and structural detail must be identical to the original photo.`
   );
 }
