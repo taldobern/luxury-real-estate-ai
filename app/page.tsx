@@ -347,21 +347,21 @@ export default function Home() {
   const isLoading = step === "picking-angle" && angles.length === 0;
 
   return (
-    <main className="min-h-screen" style={{ background: "#f7f4ef" }}>
+    <main className="min-h-screen" style={{ background: "linear-gradient(160deg, #faf7f2 0%, #f5f0e8 50%, #f0ebe0 100%)" }}>
       {/* ── Header ── */}
-      <header className="border-b bg-white" style={{ borderColor: "#e4ddd0" }}>
+      <header className="border-b" style={{ borderColor: "rgba(184,144,42,0.15)", background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50 }}>
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)" }}>
-              <span className="text-white font-semibold text-sm">L</span>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #d4a843, #9a7520)", boxShadow: "0 2px 8px rgba(184,144,42,0.4)" }}>
+              <span className="text-white font-bold text-sm">L</span>
             </div>
             <div>
-              <span className="font-light tracking-[0.15em] text-lg"
+              <span className="font-semibold tracking-[0.18em] text-xl"
                 style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#1a1a1a" }}>LUX</span>
-              <span className="font-semibold tracking-[0.15em] text-lg"
+              <span className="font-bold tracking-[0.18em] text-xl"
                 style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#b8902a" }}>VISION</span>
-              <span className="ml-2 text-xs tracking-widest uppercase" style={{ color: "#bbb8b0" }}>AI</span>
+              <span className="ml-2 text-[10px] tracking-widest uppercase" style={{ color: "#bbb8b0" }}>AI</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -369,14 +369,14 @@ export default function Home() {
               <span className="hidden sm:block text-xs mr-2" style={{ color: "#888880" }}>{userEmail}</span>
             )}
             <Link href="/dashboard"
-              className="text-xs tracking-widest uppercase px-3 py-1.5 rounded-lg font-medium transition-colors"
-              style={{ color: "#b8902a", background: "rgba(184,144,42,0.08)", border: "1px solid rgba(184,144,42,0.2)" }}>
+              className="text-xs tracking-widest uppercase px-4 py-2 rounded-lg font-semibold transition-all duration-200"
+              style={{ color: "#b8902a", background: "rgba(184,144,42,0.08)", border: "1px solid rgba(184,144,42,0.25)" }}>
               History
             </Link>
             {userEmail && (
               <button onClick={handleSignOut}
-                className="text-xs tracking-widest uppercase px-3 py-1.5 rounded-lg transition-colors"
-                style={{ color: "#888880", border: "1px solid #e4ddd0", background: "#fff" }}>
+                className="text-xs tracking-widest uppercase px-4 py-2 rounded-lg transition-all duration-200"
+                style={{ color: "#888880", border: "1px solid #e4ddd0", background: "rgba(255,255,255,0.8)" }}>
                 Sign Out
               </button>
             )}
@@ -384,27 +384,27 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-10">
+      <div className="max-w-5xl mx-auto px-6 py-14">
         {/* ── Hero ── */}
-        <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-3 mb-5">
-            <div className="h-px w-8" style={{ background: "linear-gradient(to right, transparent, #d4a843)" }} />
-            <span className="text-[10px] tracking-[0.25em] uppercase flex items-center gap-1.5" style={{ color: "#b8902a" }}>
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="h-px w-12" style={{ background: "linear-gradient(to right, transparent, #d4a843)" }} />
+            <span className="text-[10px] tracking-[0.3em] uppercase flex items-center gap-2 font-medium" style={{ color: "#b8902a" }}>
               ✦ AI-Powered Listing Studio
             </span>
-            <div className="h-px w-8" style={{ background: "linear-gradient(to left, transparent, #d4a843)" }} />
+            <div className="h-px w-12" style={{ background: "linear-gradient(to left, transparent, #d4a843)" }} />
           </div>
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-light leading-[1.1] mb-5"
-            style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#1a1a1a" }}>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold leading-[1.05] mb-6"
+            style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#1a1a1a", letterSpacing: "-0.01em" }}>
             Transform Any Address
             <br />
-            <em style={{ fontStyle: "italic", background: "linear-gradient(135deg, #d4a843 0%, #b8902a 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+            <em className="font-bold" style={{ fontStyle: "italic", background: "linear-gradient(135deg, #d4a843 0%, #9a7520 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
               Into Magazine Art
             </em>
           </h1>
-          <p className="text-base font-light max-w-lg mx-auto leading-relaxed" style={{ color: "#888880" }}>
+          <p className="text-base max-w-md mx-auto leading-relaxed" style={{ color: "#6b6760", fontWeight: 400 }}>
             We pull the real Street View photograph and reimagine it as a{" "}
-            <strong style={{ color: "#1a1a1a", fontWeight: 600 }}>luxury listing</strong>{" "}
+            <strong style={{ color: "#1a1a1a", fontWeight: 700 }}>luxury listing</strong>{" "}
             worthy of the front cover.
           </p>
         </div>
@@ -706,9 +706,14 @@ export default function Home() {
         </div>
       </div>
 
-      <footer className="mt-16 border-t py-6 text-center bg-white" style={{ borderColor: "#e4ddd0" }}>
-        <p className="text-xs tracking-widest uppercase" style={{ color: "#bbb8b0" }}>
-          LuxVision AI · Google Street View + Gemini Pro · Images are AI-enhanced
+      <footer className="mt-20 border-t py-8 text-center" style={{ borderColor: "rgba(184,144,42,0.15)", background: "rgba(255,255,255,0.6)" }}>
+        <div className="flex items-center justify-center gap-4 mb-2">
+          <div className="h-px w-8" style={{ background: "linear-gradient(to right, transparent, #d4a843)" }} />
+          <span className="text-[10px] tracking-[0.3em] uppercase font-medium" style={{ color: "#b8902a" }}>LuxVision AI</span>
+          <div className="h-px w-8" style={{ background: "linear-gradient(to left, transparent, #d4a843)" }} />
+        </div>
+        <p className="text-[10px] tracking-widest uppercase" style={{ color: "#bbb8b0" }}>
+          Google Street View + Gemini Pro · Images are AI-enhanced
         </p>
       </footer>
     </main>
