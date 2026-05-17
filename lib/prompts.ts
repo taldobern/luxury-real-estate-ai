@@ -1,6 +1,7 @@
-export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = {
+export const STYLE_CONFIGS: Record<string, { label: string; description: string; prompt: string }> = {
   aerial: {
     label: "Aerial / Drone View",
+    description: "Bird's eye",
     prompt:
       "Enhance this real property photo to look like a professional luxury real estate drone photograph. " +
       "Keep the exact same house, architecture, layout, and surroundings — do NOT change the building structure. " +
@@ -11,6 +12,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = 
   },
   "luxury-modern": {
     label: "Luxury Modern",
+    description: "Clean premium",
     prompt:
       "Enhance this real property photo for a luxury real estate magazine cover. " +
       "Keep the exact same house structure and architecture — do NOT redesign or replace the building. " +
@@ -21,6 +23,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = 
   },
   sunset: {
     label: "Golden Hour / Sunset",
+    description: "Warm twilight",
     prompt:
       "Enhance this real property photo into a photorealistic luxury real estate twilight image at blue hour. " +
       "Keep the exact same house, architecture, and layout — do NOT change or replace the building structure. " +
@@ -33,6 +36,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = 
   },
   cinematic: {
     label: "Cinematic",
+    description: "Bold contrast",
     prompt:
       "Enhance this real property photo with cinematic color grading for a luxury real estate presentation. " +
       "Keep the exact same house and architecture — do NOT redesign the building. " +
@@ -42,6 +46,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = 
   },
   "night-luxury": {
     label: "Night Luxury",
+    description: "Dramatic night",
     prompt:
       "Enhance this real property photo into a luxury night photography image. " +
       "Keep the exact same house and architecture — do NOT change the building structure. " +
@@ -51,6 +56,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; prompt: string }> = 
   },
   "bright-clean": {
     label: "Bright & Clean",
+    description: "Soft daylight",
     prompt:
       "Enhance this real property photo to look clean, bright, and professional for a luxury real estate brochure. " +
       "Keep the exact same house and architecture — do NOT change the building. " +

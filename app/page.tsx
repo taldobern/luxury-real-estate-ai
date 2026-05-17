@@ -51,6 +51,18 @@ const SearchIcon = () => (
   </svg>
 );
 
+const MapPinIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+  </svg>
+);
+
+const StyleIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+  </svg>
+);
+
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 
 function LoadingSkeleton({ label }: { label: string }) {
@@ -345,9 +357,10 @@ export default function Home() {
 
   const styleKeys = Object.keys(STYLE_CONFIGS) as StyleKey[];
   const isLoading = step === "picking-angle" && angles.length === 0;
+  const [styleDropdownOpen, setStyleDropdownOpen] = useState(false);
 
   return (
-    <main className="min-h-screen" style={{ background: "linear-gradient(160deg, #faf7f2 0%, #f5f0e8 50%, #f0ebe0 100%)" }}>
+    <main className="min-h-screen" style={{ background: "linear-gradient(160deg, #fdf9f2 0%, #f8f2e4 30%, #f2ead6 65%, #ede3c8 100%)" }}>
       {/* ── Header ── */}
       <header className="border-b" style={{ borderColor: "rgba(184,144,42,0.15)", background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50 }}>
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -410,10 +423,11 @@ export default function Home() {
         </div>
 
         {/* ── Input card ── */}
-        <div className="rounded-2xl p-7 mb-6 bg-white" style={{ border: "1px solid #e4ddd0", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+        <div className="rounded-2xl p-7 mb-6" style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(184,144,42,0.2)", boxShadow: "0 8px 40px rgba(184,144,42,0.1), 0 2px 8px rgba(0,0,0,0.04)" }}>
           <div className="grid md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <label className="block text-xs tracking-widest uppercase mb-2 font-medium" style={{ color: "#888880" }}>
+              <label className="flex items-center gap-1.5 text-xs tracking-widest uppercase mb-2 font-semibold" style={{ color: "#b8902a" }}>
+                <MapPinIcon />
                 Property Address
               </label>
               <input
@@ -424,31 +438,63 @@ export default function Home() {
                 placeholder="e.g. 1600 Mulholland Drive, Los Angeles, CA"
                 className="w-full px-5 py-3.5 rounded-xl text-sm transition-all duration-200"
                 style={{
-                  background: "#f7f4ef",
+                  background: "#faf8f4",
                   border: `1px solid ${address ? "#d4a843" : "#ddd8ce"}`,
                   color: "#1a1a1a",
-                  boxShadow: address ? "0 0 0 3px rgba(184,144,42,0.1)" : "none",
+                  boxShadow: address ? "0 0 0 3px rgba(184,144,42,0.12)" : "none",
                 }}
               />
             </div>
 
             <div>
-              <label className="block text-xs tracking-widest uppercase mb-2 font-medium" style={{ color: "#888880" }}>
+              <label className="flex items-center gap-1.5 text-xs tracking-widest uppercase mb-2 font-semibold" style={{ color: "#b8902a" }}>
+                <StyleIcon />
                 Visual Style
               </label>
               <div className="relative">
-                <select value={style} onChange={(e) => { setStyle(e.target.value as StyleKey); if (step !== "input") handleReset(); }}
-                  className="w-full appearance-none px-5 py-3.5 rounded-xl text-sm cursor-pointer"
-                  style={{ background: "#f7f4ef", border: "1px solid #ddd8ce", color: "#1a1a1a" }}>
-                  {styleKeys.map((key) => (
-                    <option key={key} value={key}>{STYLE_CONFIGS[key].label}</option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <button
+                  type="button"
+                  onClick={() => setStyleDropdownOpen((o) => !o)}
+                  className="w-full px-5 py-3.5 rounded-xl text-sm text-left transition-all duration-200 flex items-center justify-between"
+                  style={{
+                    background: "#faf8f4",
+                    border: `1px solid ${styleDropdownOpen ? "#d4a843" : "#ddd8ce"}`,
+                    color: "#1a1a1a",
+                    boxShadow: styleDropdownOpen ? "0 0 0 3px rgba(184,144,42,0.12)" : "none",
+                  }}>
+                  <div>
+                    <span className="font-medium">{STYLE_CONFIGS[style].label}</span>
+                    <span className="ml-2 text-xs" style={{ color: "#b8902a" }}>{STYLE_CONFIGS[style].description}</span>
+                  </div>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                    style={{ transform: styleDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
                     <path d="M2 4l4 4 4-4" stroke="#b8902a" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
-                </div>
+                </button>
+                {styleDropdownOpen && (
+                  <div className="absolute z-20 w-full mt-1 rounded-xl overflow-hidden"
+                    style={{ background: "#fff", border: "1px solid rgba(184,144,42,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}>
+                    {styleKeys.map((key) => (
+                      <button key={key} type="button"
+                        onClick={() => { setStyle(key); setStyleDropdownOpen(false); if (step !== "input") handleReset(); }}
+                        className="w-full px-5 py-3 text-left flex items-center justify-between transition-colors duration-150"
+                        style={{
+                          background: style === key ? "rgba(184,144,42,0.08)" : "transparent",
+                          borderBottom: "1px solid #f0ece4",
+                        }}>
+                        <div>
+                          <span className="text-sm font-medium" style={{ color: "#1a1a1a" }}>{STYLE_CONFIGS[key].label}</span>
+                          <span className="ml-2 text-xs" style={{ color: "#b8902a" }}>{STYLE_CONFIGS[key].description}</span>
+                        </div>
+                        {style === key && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8902a" strokeWidth="2.5">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
