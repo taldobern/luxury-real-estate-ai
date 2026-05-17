@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
       imageBuffer = Buffer.from(geminiImageData, "base64");
 
     } else {
-      // All other styles: Street View + OpenAI gpt-image-1
+      // All other styles: Street View + Gemini (Pro with Flash fallback)
       let streetViewBuffer: Buffer;
       try {
         streetViewBuffer = await fetchStreetView(address.trim(), heading);
@@ -147,25 +147,48 @@ export async function POST(req: NextRequest) {
       }
       originalBase64 = `data:image/jpeg;base64,${streetViewBuffer.toString("base64")}`;
       prompt = buildPrompt(address.trim(), style);
-      const imageFile = await toFile(streetViewBuffer, "property.jpg", { type: "image/jpeg" });
-      const response = await openai.images.edit({
-        model: "gpt-image-1",
-        image: imageFile,
-        prompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "high",
-      });
-      const imageData = response.data?.[0];
-      if (!imageData) return NextResponse.json({ error: "No image returned by OpenAI." }, { status: 500 });
-      if (imageData.b64_json) {
-        imageBuffer = Buffer.from(imageData.b64_json, "base64");
-      } else if (imageData.url) {
-        const imgRes = await fetch(imageData.url);
-        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
-      } else {
-        return NextResponse.json({ error: "Unexpected API response format." }, { status: 500 });
+
+      const base64Data = streetViewBuffer.toString("base64");
+      const mimeType = "image/jpeg";
+
+      const gemini2 = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
+      const geminiModels2 = [
+        "gemini-3-pro-image-preview",
+        "gemini-3-pro-image-preview",
+        "gemini-3-pro-image-preview",
+        "gemini-3.1-flash-image-preview",
+      ];
+      let geminiImageData2: string | undefined;
+
+      for (const model of geminiModels2) {
+        try {
+          console.log(`[Gemini] Trying ${model} for style: ${style}`);
+          const geminiResponse = await gemini2.models.generateContent({
+            model,
+            contents: [
+              { text: prompt },
+              { inlineData: { mimeType, data: base64Data } },
+            ],
+            config: { responseModalities: ["IMAGE"] },
+          });
+
+          const parts = geminiResponse.candidates?.[0]?.content?.parts ?? [];
+          for (const part of parts) {
+            if (part.inlineData?.data) {
+              geminiImageData2 = part.inlineData.data;
+              break;
+            }
+          }
+          if (geminiImageData2) break;
+        } catch (err) {
+          console.warn(`[Gemini] ${model} failed, retrying...`, err);
+        }
       }
+
+      if (!geminiImageData2) {
+        return NextResponse.json({ error: "Image generation temporarily unavailable. Please try again." }, { status: 503 });
+      }
+      imageBuffer = Buffer.from(geminiImageData2, "base64");
     }
 
     const imageBase64 = `data:image/png;base64,${imageBuffer.toString("base64")}`;
