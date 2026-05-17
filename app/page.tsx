@@ -387,15 +387,25 @@ export default function Home() {
       <div className="max-w-5xl mx-auto px-6 py-10">
         {/* ── Hero ── */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-light leading-tight mb-3"
-            style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#1a1a1a" }}>
-            Transform Any Address Into{" "}
-            <span style={{ background: "linear-gradient(135deg, #d4a843 0%, #b8902a 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              Magazine Art
+          <div className="flex items-center justify-center gap-3 mb-5">
+            <div className="h-px w-8" style={{ background: "linear-gradient(to right, transparent, #d4a843)" }} />
+            <span className="text-[10px] tracking-[0.25em] uppercase flex items-center gap-1.5" style={{ color: "#b8902a" }}>
+              ✦ AI-Powered Listing Studio
             </span>
+            <div className="h-px w-8" style={{ background: "linear-gradient(to left, transparent, #d4a843)" }} />
+          </div>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-light leading-[1.1] mb-5"
+            style={{ fontFamily: "Cormorant Garamond, Georgia, serif", color: "#1a1a1a" }}>
+            Transform Any Address
+            <br />
+            <em style={{ fontStyle: "italic", background: "linear-gradient(135deg, #d4a843 0%, #b8902a 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              Into Magazine Art
+            </em>
           </h1>
-          <p className="text-base font-light max-w-lg mx-auto" style={{ color: "#888880" }}>
-            We pull the real Street View photo and transform it into a luxury listing image using AI.
+          <p className="text-base font-light max-w-lg mx-auto leading-relaxed" style={{ color: "#888880" }}>
+            We pull the real Street View photograph and reimagine it as a{" "}
+            <strong style={{ color: "#1a1a1a", fontWeight: 600 }}>luxury listing</strong>{" "}
+            worthy of the front cover.
           </p>
         </div>
 
