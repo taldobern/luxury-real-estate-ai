@@ -653,7 +653,7 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="text-[10px] tracking-widest uppercase mb-1" style={{ color: "#bbb8b0" }}>Source</p>
-                      <p className="text-xs" style={{ color: "#888880" }}>Google Street View → OpenAI</p>
+                      <p className="text-xs" style={{ color: "#888880" }}>Google Street View → Gemini Pro</p>
                     </div>
                   </div>
 
@@ -698,7 +698,7 @@ export default function Home() {
 
       <footer className="mt-16 border-t py-6 text-center bg-white" style={{ borderColor: "#e4ddd0" }}>
         <p className="text-xs tracking-widest uppercase" style={{ color: "#bbb8b0" }}>
-          LuxVision AI · Google Street View + OpenAI · Images are AI-enhanced
+          LuxVision AI · Google Street View + Gemini Pro · Images are AI-enhanced
         </p>
       </footer>
     </main>
