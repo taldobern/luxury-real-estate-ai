@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI, { toFile } from "openai";
 import { GoogleGenAI } from "@google/genai";
 import { buildPrompt, buildAerialDronePrompt, STYLE_CONFIGS, StyleKey } from "@/lib/prompts";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
@@ -86,8 +85,6 @@ export async function POST(req: NextRequest) {
     let prompt: string;
     let originalBase64: string;
     let imageBuffer: Buffer;
-
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     if (style === "aerial" && uploadedImageBase64) {
       // Aerial/Drone: Gemini Nano Banana 2 (gemini-3.1-flash-image-preview)
@@ -225,16 +222,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ imageBase64, originalBase64, prompt } satisfies GenerateResponse);
   } catch (err: unknown) {
     console.error("[/api/generate] Error:", err);
-
-    if (err instanceof OpenAI.APIError) {
-      const msg =
-        err.status === 429 ? "Rate limit reached. Please wait and try again." :
-        err.status === 401 ? "Invalid OpenAI API key." :
-        err.status === 400 ? "OpenAI rejected the image. Try a different address or style." :
-        err.message || "OpenAI API error.";
-      return NextResponse.json({ error: msg }, { status: err.status ?? 500 });
-    }
-
     const message = err instanceof Error ? err.message : "An unexpected error occurred.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
