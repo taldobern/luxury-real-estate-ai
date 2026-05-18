@@ -11,7 +11,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; description: string;
       "The result should look like a bright clear-day professional drone photo used in a luxury real estate brochure.",
   },
   "luxury-modern": {
-    label: "Luxury Modern",
+    label: "Luxury Modern (Beta)",
     description: "Clean premium",
     prompt:
       "Enhance this real property photo for a luxury real estate magazine cover. " +
@@ -22,7 +22,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; description: string;
       "The house must remain recognizable as the same property, just elevated to luxury magazine quality.",
   },
   sunset: {
-    label: "Golden Hour / Sunset",
+    label: "Golden Hour / Sunset (Beta)",
     description: "Warm twilight",
     prompt:
       "Enhance this real property photo into a photorealistic luxury real estate twilight image at blue hour. " +
@@ -35,7 +35,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; description: string;
       "The result must feel like a real photograph — emotionally captivating and elegant, like a Mansion Global or Architectural Digest feature.",
   },
   cinematic: {
-    label: "Cinematic",
+    label: "Cinematic (Beta)",
     description: "Bold contrast",
     prompt:
       "Enhance this real property photo with cinematic color grading for a luxury real estate presentation. " +
@@ -45,7 +45,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; description: string;
       "The result should look like a high-end architectural photo of the same real property.",
   },
   "night-luxury": {
-    label: "Night Luxury",
+    label: "Night Luxury (Beta)",
     description: "Dramatic night",
     prompt:
       "Enhance this real property photo into a luxury night photography image. " +
@@ -55,7 +55,7 @@ export const STYLE_CONFIGS: Record<string, { label: string; description: string;
       "The result must be the same real property, photographed at night with luxury real estate lighting.",
   },
   "bright-clean": {
-    label: "Bright & Clean",
+    label: "Bright & Clean (Beta)",
     description: "Soft daylight",
     prompt:
       "Enhance this real property photo to look clean, bright, and professional for a luxury real estate brochure. " +
